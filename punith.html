@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punith H Singh - Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-color: rgba(22, 27, 34, 0.7);
+            --border-color: rgba(48, 54, 61, 0.8);
+            --text-color: #c9d1d9;
+            --accent-color: #58a6ff;
+            --shadow-color: rgba(88, 166, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        #aurora-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .aurora {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.3;
+        }
+        
+        #aurora-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
+        }
+
+        canvas#starfield {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -2;
+        }
+
+        .section-title {
+            @apply text-7xl md:text-8xl font-black text-center mb-28 text-slate-50 flex items-center justify-center gap-x-5;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.15), 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background-color: var(--card-color);
+            @apply p-8 rounded-2xl border transition-all duration-300 backdrop-blur-lg relative;
+            border-color: var(--border-color);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 0 40px var(--shadow-color);
+            border-color: var(--accent-color);
+            z-index: 10;
+        }
+
+        .tech-tag-3d {
+            @apply inline-block text-xs font-bold mr-2 mb-2 px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer;
+            background: linear-gradient(145deg, #20262e, #1a1f26);
+            color: #b0bac6;
+            border: 1px solid #30363d;
+            box-shadow: -2px -2px 5px rgba(50, 56, 64, 0.2), 3px 3px 5px rgba(0,0,0,0.5);
+        }
+
+        .tech-tag-3d:hover {
+            color: #fff;
+            box-shadow: -1px -1px 3px rgba(50, 56, 64, 0.2), 2px 2px 3px rgba(0,0,0,0.5);
+        }
+        
+        .tech-tag-3d:active {
+            box-shadow: inset -2px -2px 5px rgba(50, 56, 64, 0.2), inset 3px 3px 5px rgba(0,0,0,0.5);
+        }
+
+        .btn-3d {
+            @apply relative inline-block rounded-lg font-bold transition-transform duration-150 py-3 px-8 text-lg;
+            transform-style: preserve-3d;
+        }
+
+        .btn-3d::before {
+            content: '';
+            @apply absolute top-0 left-0 w-full h-full rounded-lg transition-transform duration-150;
+            transform: translate3d(0, 0.35em, -1em);
+            box-shadow: 0 0 0 0.1em rgba(0,0,0,0.2);
+        }
+
+        .btn-3d:hover {
+            transform: translateY(-0.25em);
+        }
+
+        .btn-3d:active {
+            transform: translateY(0.1em);
+        }
+
+        .btn-primary {
+            @apply bg-sky-600 text-white;
+        }
+
+        .btn-primary::before {
+            background-color: #0c4a6e;
+        }
+        
+        .btn-secondary {
+            background-color: #374151;
+            color: var(--text-color);
+        }
+        
+        .btn-secondary::before {
+            background-color: #111827;
+        }
+
+        .btn-nav {
+            @apply relative bg-sky-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 overflow-hidden;
+            border: 1px solid var(--accent-color);
+        }
+        .btn-nav:hover {
+            box-shadow: 0 0 15px var(--shadow-color);
+            transform: scale(1.05);
+        }
+        
+        .timeline-item::before {
+            content: '';
+            @apply absolute -left-[22px] top-1 w-5 h-5 rounded-full border-2;
+            background-color: var(--bg-color);
+            border-color: var(--accent-color);
+        }
+
+        .scroll-animation {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .scroll-animation.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .skill-category-title {
+            @apply text-3xl font-bold text-sky-400 text-center mb-8;
+        }
+
+        .skill-tag {
+            @apply bg-gray-800/50 text-slate-300 font-medium text-lg px-6 py-3 rounded-lg border border-gray-700 transition-all duration-300;
+            cursor: default;
+        }
+
+        .skill-tag:hover {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border-color: var(--accent-color);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 20px var(--shadow-color);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div id="aurora-container">
+        <div id="aurora-1" class="aurora"></div>
+    </div>
+    <canvas id="starfield"></canvas>
+
+    <header class="bg-black/30 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-700 shadow-sm">
+      <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <!-- Logo -->
+        <a href="#" class="text-2xl font-bold text-slate-100 tracking-wider hover:text-white transition-colors">PUNITH</a>
+    
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex space-x-8 items-center">
+          <a href="#about" class="text-slate-400 hover:text-white font-medium transition-all duration-300">About</a>
+          <a href="#skills" class="text-slate-400 hover:text-white font-medium transition-all duration-300">Skills</a>
+          <a href="#experience" class="text-slate-400 hover:text-white font-medium transition-all duration-300">Experience</a>
+          <a href="#projects" class="text-slate-400 hover:text-white font-medium transition-all duration-300">Projects</a>
+          <a href="#contact" class="px-5 py-2 bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300">Contact</a>
+        </div>
+    
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-button" class="md:hidden text-slate-100 focus:outline-none">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </nav>
+    
+      <!-- Mobile Menu -->
+      <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 bg-black/50 backdrop-blur-lg space-y-2 transition-all duration-300">
+        <a href="#about" class="block py-2 text-slate-400 hover:text-white font-medium">About</a>
+        <a href="#skills" class="block py-2 text-slate-400 hover:text-white font-medium">Skills</a>
+        <a href="#experience" class="block py-2 text-slate-400 hover:text-white font-medium">Experience</a>
+        <a href="#projects" class="block py-2 text-slate-400 hover:text-white font-medium">Projects</a>
+        <a href="#contact" class="block mt-2 px-5 py-2 bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg text-center hover:scale-105 transform transition-all duration-300">Contact</a>
+      </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-16 relative z-10">
+
+        <section id="home" class="text-center min-h-[85vh] flex flex-col justify-center items-center py-28 scroll-animation">
+  <!-- Name -->
+  <h1 class="text-6xl md:text-8xl font-black leading-tight mb-4 text-slate-50 drop-shadow-lg">
+    Punith H Singh
+  </h1>
+
+  <!-- Title -->
+  <p class="text-2xl md:text-3xl text-sky-400 mb-10 font-medium drop-shadow-md">
+    Computer Science Graduate & Software Developer
+  </p>
+
+  <!-- Buttons -->
+  <div class="flex flex-col sm:flex-row gap-6">
+    <a href="#contact" 
+       class="inline-block px-8 py-3 bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+      Get in Touch
+    </a>
+    <a href="#" 
+       class="inline-block px-8 py-3 bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+      Download CV
+    </a>
+  </div>
+
+  <!-- Social Icons -->
+  <div class="flex justify-center space-x-6 mt-16 text-slate-400">
+    <a href="mailto:punithsingh18@gmail.com" class="hover:text-sky-400 transition-colors" aria-label="Email">
+      <i data-lucide="mail" class="w-7 h-7"></i>
+    </a>
+    <a href="#" class="hover:text-sky-400 transition-colors" aria-label="LinkedIn">
+      <i data-lucide="linkedin" class="w-7 h-7"></i>
+    </a>
+    <a href="#" class="hover:text-sky-400 transition-colors" aria-label="GitHub">
+      <i data-lucide="github" class="w-7 h-7"></i>
+    </a>
+  </div>
+</section>
+
+<script>
+  lucide.createIcons({ width: 24, height: 24, stroke: 'currentColor' });
+</script>
+
+
+        <section id="about" class="py-28 scroll-animation">
+          <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-16">
+            <i data-lucide="user" class="w-10 h-10 text-purple-400"></i>About Me
+          </h2>
+          
+          <div class="max-w-4xl mx-auto text-center text-xl text-slate-300 leading-relaxed space-y-6">
+            <p>
+              I’m a Computer Science Engineer passionate about building scalable, real-world solutions through technology. 
+              My expertise spans <span class="text-white font-medium">web development, AI/ML, and mobile applications</span>, 
+              with a strong focus on creating impactful user experiences.
+            </p>
+            <p>
+              As a proactive self-learner, I thrive on exploring emerging technologies and continuously expanding my skill set. 
+              I’m driven to contribute to organizations that value <span class="text-white font-medium">innovation, creativity, and continuous improvement</span>.
+            </p>
+          </div>
+        </section>
+
+        
+        <section id="skills" class="py-36 scroll-animation">
+          <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-16">
+            <i data-lucide="cpu"class="w-10 h-10 text-green-400"></i>Technical Expertise
+          </h2>
+          
+          <div class="max-w-6xl mx-auto space-y-24">
+            
+            <div class="skill-category">
+              <h3 class="skill-category-title">Programming Languages</h3>
+              <div class="flex flex-wrap justify-center gap-8">
+                <span class="skill-tag">Python</span>
+                <span class="skill-tag">JavaScript</span>
+                <span class="skill-tag">Go (Golang)</span>
+                <span class="skill-tag">SQL</span>
+              </div>
+            </div>
+        
+            <div class="skill-category">
+              <h3 class="skill-category-title">Web & Database</h3>
+              <div class="flex flex-wrap justify-center gap-8">
+                <span class="skill-tag">React.js</span>
+                <span class="skill-tag">Node.js</span>
+                <span class="skill-tag">MongoDB</span>
+              </div>
+            </div>
+            
+            <div class="skill-category">
+              <h3 class="skill-category-title">DevOps & Cloud Tools</h3>
+              <div class="flex flex-wrap justify-center gap-8">
+                <span class="skill-tag">Docker</span>
+                <span class="skill-tag">Kubernetes</span>
+                <span class="skill-tag">Jenkins</span>
+                <span class="skill-tag">IBM Cloud</span>
+                <span class="skill-tag">Git / GitHub</span>
+              </div>
+            </div>
+        
+          </div>
+        </section>
+        
+        <style>
+          .skill-tag {
+            padding: 0.6rem 1.4rem;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 9999px; /* rounded pill */
+            background: rgba(255, 255, 255, 0.08); /* transparent glass */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #fff;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            cursor: default;
+          }
+        
+          .skill-tag:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+          }
+        
+          .skill-category-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #fff;
+          }
+        </style>
+
+
+        <section id="experience" class="py-24 scroll-animation">
+          <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-16">
+            <i data-lucide="briefcase" class="w-10 h-10 text-blue-400"></i> Professional Experience
+          </h2>
+        
+          <div class="max-w-3xl mx-auto relative border-l-2 pl-12 space-y-16"
+               style="border-image: linear-gradient(to bottom, #38bdf8, #1e293b) 1;">
+            
+            <!-- Timeline Item -->
+            <div class="timeline-item group ml-2 pl-6 border-l-4 border-transparent hover:border-sky-400 transition">
+              <p class="text-sm italic text-slate-400 mb-2">Feb 2024 – Present</p>
+              <h3 class="text-2xl font-bold text-slate-100 group-hover:text-sky-300 transition">
+                Operations Analyst Consultant
+              </h3>
+              <p class="text-lg text-slate-400">
+                <span class="text-sky-400">CRED</span> (Dreamplug Technologies Pvt. Ltd.)
+              </p>
+            </div>
+        
+            <!-- Timeline Item -->
+            <div class="timeline-item group ml-2 pl-6 border-l-4 border-transparent hover:border-sky-400 transition">
+              <p class="text-sm italic text-slate-400 mb-2">Sep 2023 – Feb 2024</p>
+              <h3 class="text-2xl font-bold text-slate-100 group-hover:text-sky-300 transition">
+                AI-DevOps Engineer (Internship)
+              </h3>
+              <p class="text-lg text-slate-400">
+                <span class="text-sky-400">Rooman Technologies Pvt. Ltd.</span>
+              </p>
+            </div>
+        
+            <!-- Timeline Item -->
+            <div class="timeline-item group ml-2 pl-6 border-l-4 border-transparent hover:border-sky-400 transition">
+              <p class="text-sm italic text-slate-400 mb-2">Sep 2022 – Oct 2022</p>
+              <h3 class="text-2xl font-bold text-slate-100 group-hover:text-sky-300 transition">
+                Full Stack Trainee
+              </h3>
+              <p class="text-lg text-slate-400">
+                <span class="text-sky-400">Indian Tech Keys</span>
+              </p>
+            </div>
+        
+          </div>
+        </section>
+
+
+
+
+        <section id="projects" class="py-24 scroll-animation">
+          <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-16">
+            <i data-lucide="lightbulb" class="w-10 h-10 text-yellow-400"></i> Projects
+          </h2>
+        
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 max-w-7xl mx-auto px-6">
+            
+            <!-- Project Card -->
+            <div class="glass-card flex flex-col p-8 rounded-2xl shadow-lg hover:shadow-yellow-400/30 transition duration-300 hover:scale-[1.03]">
+              <h3 class="text-3xl font-semibold text-slate-100 mb-3">Chatbot Application</h3>
+              <p class="text-slate-400 text-lg mb-6 flex-grow leading-relaxed">Engineered an interactive chatbot with a modern UI, robust Python (Flask) backend, and Oracle SQL integration.</p>
+              <div class="mt-auto flex flex-wrap gap-3 pt-4">
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Python
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Flask
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Oracle SQL
+          </button>
+        </div>
+        
+            </div>
+        
+            <!-- Project Card -->
+            <div class="glass-card flex flex-col p-8 rounded-2xl shadow-lg hover:shadow-cyan-400/30 transition duration-300 hover:scale-[1.03]">
+              <h3 class="text-3xl font-semibold text-slate-100 mb-3">Password Manager</h3>
+              <p class="text-slate-400 text-lg mb-6 flex-grow leading-relaxed">Developed a secure, responsive password manager with user authentication, encryption, and credential management.</p>
+              <div class="mt-auto flex flex-wrap gap-2 pt-4">
+                <button class="tech-btn px-4 py-2 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+                  React.js
+                </button>
+                <button class="tech-btn px-4 py-2 bg-gradient-to-br from-green-500 to-lime-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+                    Node.js
+                </button>
+                <button class="tech-btn px-4 py-2 bg-gradient-to-br from-orange-500 to-red-500 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+                    MongoDB
+                </button>
+               </div>
+            </div>
+        
+            <!-- Project Card -->
+            <div class="glass-card flex flex-col p-8 rounded-2xl shadow-lg hover:shadow-pink-400/30 transition duration-300 hover:scale-[1.03]">
+              <h3 class="text-3xl font-semibold text-slate-100 mb-3">Sentiment Analysis App</h3>
+              <p class="text-slate-400 text-lg mb-6 flex-grow leading-relaxed">Built a Python & Streamlit app for Twitter sentiment analysis using Logistic Regression with interactive visualizations.</p>
+              <div class="mt-auto flex flex-wrap gap-3 pt-4">
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Python
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-pink-500 to-purple-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Streamlit
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-green-400 to-teal-500 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Scikit-learn
+          </button>
+        </div>
+        
+            </div>
+        
+            <!-- Project Card -->
+            <div class="glass-card flex flex-col p-8 rounded-2xl shadow-lg hover:shadow-green-400/30 transition duration-300 hover:scale-[1.03]">
+              <h3 class="text-3xl font-semibold text-slate-100 mb-3">Speed Detection System</h3>
+              <p class="text-slate-400 text-lg mb-6 flex-grow leading-relaxed">Used ML to measure vehicle speeds in real-time by analyzing video footage and extracting relevant features.</p>
+              <div class="mt-auto flex flex-wrap gap-3 pt-4">
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Python
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-yellow-400 to-orange-500 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            OpenCV
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-green-400 to-teal-500 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            ML
+          </button>
+        </div>
+        
+            </div>
+        
+            <!-- Project Card -->
+            <div class="glass-card flex flex-col p-8 rounded-2xl shadow-lg hover:shadow-blue-400/30 transition duration-300 hover:scale-[1.03]">
+              <h3 class="text-3xl font-semibold text-slate-100 mb-3">Air Canvas</h3>
+              <p class="text-slate-400 text-lg mb-6 flex-grow leading-relaxed">Application enabling users to draw in mid-air using hand gestures tracked by computer vision and interpreted by ML.</p>
+              <div class="mt-auto flex flex-wrap gap-3 pt-4">
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Python
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-yellow-400 to-orange-500 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            OpenCV
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-pink-400 to-purple-500 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            MediaPipe
+          </button>
+        </div>
+        
+            </div>
+        
+            <!-- Project Card -->
+            <div class="glass-card flex flex-col p-8 rounded-2xl shadow-lg hover:shadow-red-400/30 transition duration-300 hover:scale-[1.03]">
+              <h3 class="text-3xl font-semibold text-slate-100 mb-3">Train Management System</h3>
+              <p class="text-slate-400 text-lg mb-6 flex-grow leading-relaxed">A robust web application using Oracle SQL and Python to streamline ticket booking and reservation management.</p>
+              <div class="mt-auto flex flex-wrap gap-3 pt-4">
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Python
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-green-500 to-teal-600 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Flask
+          </button>
+          <button class="tech-btn px-4 py-2 bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold rounded-lg shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Oracle SQL
+          </button>
+        </div>
+        
+            </div>
+        
+          </div>
+        </section>
+
+
+        <section id="contact" class="py-24 scroll-animation">
+          <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-6">
+            <i data-lucide="send" class="w-10 h-10 text-red-400"></i> Get In Touch
+          </h2>
+          <p class="max-w-3xl mx-auto text-lg md:text-xl text-slate-400 mb-10 text-center">
+            I'm currently open to new opportunities and collaborations. Feel free to reach out via email or connect with me on social media.
+          </p>
+          <div class="flex justify-center">
+          <a href="mailto:punithsingh18@gmail.com" 
+             class="inline-block px-8 py-3 bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+            Say Hello
+          </a>
+        </div>
+        
+        </section>
+    </main>
+<footer class="border-t border-slate-700 bg-slate-950">
+  <div class="container mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center">
+    
+    <!-- Copyright -->
+    <p class="text-slate-400 text-sm md:text-base mb-4 md:mb-0">
+      &copy; 2024 Punith H Singh. All Rights Reserved.
+    </p>
+
+    <!-- Social Links -->
+    <div class="flex space-x-6">
+      <a href="#" class="text-slate-400 hover:text-blue-400 transition-colors duration-300" aria-label="LinkedIn">
+        <i data-lucide="linkedin" class="w-6 h-6"></i>
+      </a>
+      <a href="#" class="text-slate-400 hover:text-gray-100 transition-colors duration-300" aria-label="GitHub">
+        <i data-lucide="github" class="w-6 h-6"></i>
+      </a>
+      <a href="mailto:punithsingh18@gmail.com" class="text-slate-400 hover:text-sky-400 transition-colors duration-300" aria-label="Email">
+        <i data-lucide="mail" class="w-6 h-6"></i>
+      </a>
+    </div>
+
+  </div>
+</footer>
+
+<script>
+  lucide.createIcons({ width: 24, height: 24, stroke: 'currentColor' });
+</script>
+
+
+    <script>
+        lucide.createIcons();
+
+        // --- Interactive Aurora Effect ---
+        const aurora = document.getElementById('aurora-1');
+        document.addEventListener('mousemove', (e) => {
+            aurora.style.transform = `translate(${e.clientX - aurora.offsetWidth / 2}px, ${e.clientY - aurora.offsetHeight / 2}px)`;
+        });
+
+        // --- Animated Starfield Background ---
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function createStars() {
+            stars = [];
+            for (let i = 0; i < 400; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5,
+                    vx: Math.floor(Math.random() * 50) - 25,
+                    vy: Math.floor(Math.random() * 50) - 25
+                });
+            }
+        }
+
+        function drawStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = "lighter";
+            
+            for (let i = 0, x = stars.length; i < x; i++) {
+                let s = stars[i];
+                ctx.fillStyle = "#465666";
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.stroke();
+            }
+        }
+        
+        function updateStars() {
+            for (let i = 0, x = stars.length; i < x; i++) {
+                let s = stars[i];
+                s.x += s.vx / 60;
+                s.y += s.vy / 60;
+                if (s.x < 0 || s.x > canvas.width) s.vx = -s.vx;
+                if (s.y < 0 || s.y > canvas.height) s.vy = -s.vy;
+            }
+        }
+
+        function tick() {
+            drawStars();
+            updateStars();
+            requestAnimationFrame(tick);
+        }
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            createStars();
+        });
+        
+        resizeCanvas();
+        createStars();
+        tick();
+
+        // --- Mobile menu toggle ---
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        const mobileMenuLinks = mobileMenu.getElementsByTagName('a');
+        for(let i = 0; i < mobileMenuLinks.length; i++) {
+            mobileMenuLinks[i].addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        }
+
+        // --- Scroll animations ---
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.scroll-animation').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
