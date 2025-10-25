@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punith H Singh - Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-color: rgba(22, 27, 34, 0.7);
+            --border-color: rgba(48, 54, 61, 0.8);
+            --text-color: #c9d1d9;
+            --accent-color: #58a6ff;
+            --shadow-color: rgba(88, 166, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            cursor: auto; /* Revert to default browser cursor */
+        }
+
+        #aurora-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .aurora {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.3;
+        }
+        
+        #aurora-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
+        }
+
+        canvas#starfield {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -2;
+        }
+
+        .section-title {
+            @apply text-5xl md:text-7xl font-black text-center mb-20 text-slate-50 flex items-center justify-center gap-x-5;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.15), 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background-color: var(--card-color);
+            @apply p-6 rounded-2xl border transition-all duration-300 backdrop-blur-lg relative;
+            border-color: var(--border-color);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 0 40px var(--shadow-color);
+            border-color: var(--accent-color);
+            z-index: 10;
+        }
+        
+        /* NEW: 3D Tilt Effect Container */
+        .project-card-3d {
+            perspective: 1000px;
+            transition: transform 0.1s;
+        }
+        .project-card-3d .glass-card {
+             transition: all 0.3s ease-out; /* Keep original hover + new transform */
+        }
+        .project-card-3d:hover .glass-card {
+            z-index: 20; /* Ensure tilted card is on top */
+        }
+
+
+        .tech-tag-3d {
+            @apply inline-block text-xs font-bold mr-2 mb-2 px-4 py-2 rounded-lg transition-all duration-200 cursor-pointer;
+            background: linear-gradient(145deg, #20262e, #1a1f26);
+            color: #b0bac6;
+            border: 1px solid #30363d;
+            box-shadow: -2px -2px 5px rgba(50, 56, 64, 0.2), 3px 3px 5px rgba(0,0,0,0.5);
+        }
+
+        .tech-tag-3d:hover {
+            color: #fff;
+            box-shadow: -1px -1px 3px rgba(50, 56, 64, 0.2), 2px 2px 3px rgba(0,0,0,0.5);
+        }
+        
+        .tech-tag-3d:active {
+            box-shadow: inset -2px -2px 5px rgba(50, 56, 64, 0.2), inset 3px 3px 5px rgba(0,0,0,0.5);
+        }
+
+        .btn-3d {
+            @apply relative inline-block rounded-lg font-bold transition-transform duration-150 py-3 px-8 text-lg;
+            transform-style: preserve-3d;
+        }
+
+        .btn-3d::before {
+            content: '';
+            @apply absolute top-0 left-0 w-full h-full rounded-lg transition-transform duration-150;
+            transform: translate3d(0, 0.35em, -1em);
+            box-shadow: 0 0 0 0.1em rgba(0,0,0,0.2);
+        }
+
+        .btn-3d:hover {
+            transform: translateY(-0.25em);
+        }
+
+        .btn-3d:active {
+            transform: translateY(0.1em);
+        }
+
+        .btn-primary {
+            @apply bg-sky-600 text-white;
+        }
+
+        .btn-primary::before {
+            background-color: #0c4a6e;
+        }
+        
+        .btn-secondary {
+            background-color: #374151;
+            color: var(--text-color);
+        }
+        
+        .btn-secondary::before {
+            background-color: #111827;
+        }
+
+        .btn-nav {
+            @apply relative bg-sky-600 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 overflow-hidden;
+            border: 1px solid var(--accent-color);
+        }
+        .btn-nav:hover {
+            box-shadow: 0 0 15px var(--shadow-color);
+            transform: scale(1.05);
+        }
+        
+        .timeline-item::before {
+            content: '';
+            @apply absolute -left-[22px] top-3 w-5 h-5 rounded-full border-2; /* Adjusted top for alignment */
+            background-color: var(--bg-color);
+            border-color: var(--accent-color);
+        }
+
+        .scroll-animation {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .scroll-animation.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* REVERTED: skill-category-title to previous state */
+        .skill-category-title {
+            @apply text-3xl font-bold text-sky-400 text-center mb-6; 
+        }
+
+        /* REVERTED: skill-tag to match screenshot */
+        .skill-tag {
+            @apply inline-block px-5 py-2 rounded-full border border-sky-600 bg-sky-900/40 text-sky-200 text-lg font-medium transition-all duration-300;
+        }
+    
+        .skill-tag:hover {
+            @apply bg-sky-800/60 border-sky-400 text-white shadow-lg;
+            transform: translateY(-2px);
+        }
+
+        /* NEW: Active nav link style */
+        .nav-link.nav-active {
+            color: var(--accent-color);
+            text-shadow: 0 0 10px var(--shadow-color);
+        }
+        
+        /* NEW: Animated Gradient Text for Hero */
+        .text-gradient-animated {
+            background: linear-gradient(90deg, #e0e7ff, #c7d2fe, #58a6ff, #c7d2fe, #e0e7ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: text-shine 8s linear infinite;
+        }
+
+        @keyframes text-shine {
+            0% { background-position: 150% 50%; }
+            100% { background-position: -150% 50%; }
+        }
+
+    </style>
+</head>
+<body class="antialiased text-base md:text-lg">
+    <!-- REMOVED: Custom Cursor Elements --><div id="aurora-container">
+        <div id="aurora-1" class="aurora"></div>
+    </div>
+    <canvas id="starfield"></canvas>
+
+    <header class="bg-black/30 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-700 shadow-sm">
+      <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+        <!-- UPDATED: Added name as logo --><a href="#" class="text-2xl font-bold text-slate-100 tracking-wider hover:text-white transition-colors">Punith H Singh</a>
+    
+        <div class="hidden md:flex space-x-8 items-center text-base">
+          <!-- UPDATED: Added `nav-link` class and IDs for scroll spying --><a href="#about" id="nav-about" class="nav-link text-slate-400 hover:text-white font-medium transition-all duration-300">About</a>
+          <a href="#skills" id="nav-skills" class="nav-link text-slate-400 hover:text-white font-medium transition-all duration-300">Skills</a>
+          <a href="#experience" id="nav-experience" class="nav-link text-slate-400 hover:text-white font-medium transition-all duration-300">Experience</a>
+          <a href="#projects" id="nav-projects" class="nav-link text-slate-400 hover:text-white font-medium transition-all duration-300">Projects</a>
+          <a href="#contact" id="nav-contact" class="px-5 py-2 bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transform transition-all duration-300">Contact</a>
+        </div>
+    
+        <button id="mobile-menu-button" class="md:hidden text-slate-100 focus:outline-none">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </nav>
+    
+      <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 bg-black/50 backdrop-blur-lg space-y-2 transition-all duration-300">
+        <a href="#about" class="block py-2 text-slate-400 hover:text-white font-medium">About</a>
+        <a href="#skills" class="block py-2 text-slate-400 hover:text-white font-medium">Skills</a>
+        <a href="#experience" class="block py-2 text-slate-400 hover:text-white font-medium">Experience</a>
+        <a href="#projects" class="block py-2 text-slate-400 hover:text-white font-medium">Projects</a>
+        <a href="#contact" class="block mt-2 px-5 py-2 bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg text-center hover:scale-105 transform transition-all duration-300">Contact</a>
+      </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 relative z-10">
+
+        <section id="home" class="text-center min-h-[80vh] flex flex-col justify-center items-center py-12 scroll-animation">
+            <!-- UPDATED: Added animated gradient class --><h1 class="text-6xl md:text-8xl font-black leading-tight mb-4 text-slate-50 drop-shadow-lg text-gradient-animated">
+                Punith H Singh
+            </h1>
+        
+            <p class="text-2xl md:text-3xl text-sky-400 mb-8 font-medium drop-shadow-md">
+                Computer Science Graduate & Software Developer
+            </p>
+        
+            <div class="flex flex-col sm:flex-row gap-6">
+                <a href="#contact" class="inline-block px-8 py-3 bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+                    Get in Touch
+                </a>
+                <a href="#" class="inline-block px-8 py-3 bg-gradient-to-br from-sky-500 to-indigo-600 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+                    Download CV
+                </a>
+            </div>
+        
+            <div class="flex justify-center space-x-6 mt-12 text-slate-400">
+                <a href="mailto:punithsingh18@gmail.com" class="hover:text-sky-400 transition-colors" aria-label="Email">
+                    <i data-lucide="mail" class="w-7 h-7"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/punith-h-singh" class="hover:text-sky-400 transition-colors" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+                    <i data-lucide="linkedin" class="w-7 h-7"></i>
+                </a>
+                <a href="https://github.com/Punith-Singh" class="hover:text-sky-400 transition-colors" aria-label="GitHub" target="_blank" rel="noopener noreferrer">
+                    <i data-lucide="github" class="w-7 h-7"></i>
+                </a>
+            </div>
+            
+            <!-- Existing Scroll Indicator --><div id="scroll-indicator"
+                class="fixed bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 cursor-pointer transition-opacity duration-700 z-50 select-none">
+                <span class="text-[11px] tracking-[0.25em] text-slate-400 uppercase">Scroll</span>
+                <div
+                    class="relative w-14 h-14 rounded-full flex items-center justify-center bg-gradient-to-br from-cyan-400/30 via-blue-500/20 to-indigo-500/30 shadow-[0_0_25px_rgba(56,189,248,0.3)] backdrop-blur-md border border-white/10 transition-all duration-500 hover:scale-105 hover:shadow-[0_0_40px_rgba(56,189,248,0.5)]">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="white"
+                        class="w-6 h-6 animate-bounceSlow opacity-90">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m0 0l-6-6m6 6l6-6" />
+                    </svg>
+                    <div
+                        class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/10 to-cyan-400/10 blur-lg">
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                @keyframes bounceSlow {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(8px); }
+                }
+                .animate-bounceSlow {
+                    animation: bounceSlow 2s ease-in-out infinite;
+                }
+            </style>
+
+            <script>
+                // This script block is just for the scroll indicator
+                document.querySelector("#scroll-indicator").addEventListener("click", () => {
+                    const target = document.querySelector("#about");
+                    if (target) target.scrollIntoView({ behavior: "smooth" });
+                });
+
+                window.addEventListener("scroll", () => {
+                    const indicator = document.getElementById("scroll-indicator");
+                    if (indicator) {
+                        const opacity = Math.max(1 - window.scrollY / 150, 0);
+                        indicator.style.opacity = opacity.toString();
+                    }
+                });
+            </script>
+        </section>
+
+        <script>
+            // This script block is just for lucide icons
+            lucide.createIcons({ width: 24, height: 24, stroke: 'currentColor' });
+        </script>
+
+        <section id="about" class="py-12 scroll-animation">
+            <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-12">
+                <i data-lucide="user" class="w-10 h-10 text-purple-400"></i>About Me
+            </h2>
+            
+            <div class="max-w-3xl mx-auto text-gray-300 text-lg leading-relaxed space-y-4 text-justify">
+                <p>
+                    I’m a Computer Science Engineer passionate about building scalable, real-world solutions through technology. 
+                    My expertise spans <span class="text-white font-medium">web development, Cloud Computing, and mobile applications</span>, 
+                    with a strong focus on creating impactful user experiences.
+                </p>
+                <p>
+                    As a proactive self-learner, I thrive on exploring emerging technologies and continuously expanding my skill set. 
+                    I’m driven to contribute to organizations that value <span class="text-white font-medium">innovation, creativity, and continuous improvement</span>.
+                </p>
+            </div>
+        </section>
+
+        
+        <section id="skills" class="py-16 scroll-animation">
+            <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-12">
+                <i data-lucide="cpu"class="w-10 h-10 text-green-400"></i>Technical Expertise
+            </h2>
+            
+            <div class="max-w-6xl mx-auto space-y-16">
+                
+                <div class="skill-category">
+                    <h3 class="skill-category-title">Programming Languages</h3>
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">Go (Golang)</span>
+                        <span class="skill-tag">SQL</span>
+                    </div>
+                </div>
+        
+                <div class="skill-category">
+                    <h3 class="skill-category-title">Mobile, Web & Database</h3>
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <span class="skill-tag">React.js</span>
+                        <span class="skill-tag">Flutter</span>
+                        <span class="skill-tag">Node.js</span>
+                        <span class="skill-tag">MongoDB</span>
+                    </div>
+                </div>
+                
+                <div class="skill-category">
+                    <h3 class="skill-category-title">DevOps & Cloud Tools</h3>
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <span class="skill-tag">Docker</span>
+                        <span class="skill-tag">Kubernetes</span>
+                        <span class="skill-tag">Jenkins</span>
+                        <span class="skill-tag">IBM Cloud</span>
+                        <span class="skill-tag">Git / GitHub</span>
+                        <span class="skill-tag">Postman</span>
+                    </div>
+                </div>
+        
+            </div>
+        </section>
+        
+        <style>
+            .skill-tag {
+                padding: 0.6rem 1.5rem;
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                border-radius: 9999px; /* rounded pill */
+                background: rgba(255, 255, 255, 0.08); /* transparent glass */
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                font-size: 1rem;
+                font-weight: 500;
+                color: #fff;
+                letter-spacing: 0.5px;
+                transition: all 0.3s ease;
+                cursor: default;
+            }
+        
+            .skill-tag:hover {
+                border-color: rgba(255, 255, 255, 0.6);
+                background: rgba(255, 255, 255, 0.15);
+                transform: translateY(-3px) scale(1.05);
+                box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+            }
+        
+            .skill-category-title {
+                font-size: 1.5rem;
+                font-weight: 600;
+                text-align: center;
+                margin-bottom: 1.5rem;
+                color: #fff;
+            }
+        </style>
+
+
+        <section id="experience" class="py-16 scroll-animation">
+            <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-12">
+                <i data-lucide="briefcase" class="w-10 h-10 text-blue-400"></i> Professional Experience
+            </h2>
+    
+            <div class="max-w-3xl mx-auto relative border-l-2 pl-12 space-y-12"
+                 style="border-image: linear-gradient(to bottom, #38bdf8, #1e293b) 1;">
+                
+                <div class="timeline-item group ml-2 pl-6 border-l-4 border-transparent hover:border-sky-400 transition">
+                    <p class="text-base italic text-slate-400 mb-1">Feb 2025 – Present</p>
+                    <h3 class="text-3xl font-bold text-slate-100 group-hover:text-sky-300 transition">
+                        Operations Analyst Consultant
+                    </h3>
+                    <p class="text-xl text-slate-400 mb-3">
+                        <span class="text-sky-400">CRED</span> (Dreamplug Technologies Pvt. Ltd.)
+                    </p>
+            
+              
+                    </ul>
+                </div>
+        
+                <div class="timeline-item group ml-2 pl-6 border-l-4 border-transparent hover:border-sky-400 transition">
+                    <p class="text-base italic text-slate-400 mb-1">Sep 2024 – Feb 2025</p>
+                    <h3 class="text-3xl font-bold text-slate-100 group-hover:text-sky-300 transition">
+                        AI-DevOps Engineer (Internship)
+                    </h3>
+                    <p class="text-xl text-slate-400 mb-3">
+                        <span class="text-sky-400">Rooman Technologies Pvt. Ltd.</span>
+                    </p>
+                    <!-- NEW: Added responsibilities -->
+                    <ul style="list-style-type:disc; margin-left:1.5rem; line-height:1.9; font-size:0.98rem; color:#cbd5e1; text-align:justify;">
+                        <li style="margin-bottom:0.7rem; text-justify:inter-word;">
+                            Designed, containerized, and deployed cloud-native applications using <strong>Docker</strong> and <strong>Kubernetes</strong> on <strong>IBM Cloud</strong>, improving deployment scalability and consistency.
+                        </li>
+                        <li style="margin-bottom:0.7rem; text-justify:inter-word;">
+                            Built and optimized <strong>CI/CD pipelines</strong> in <strong>Jenkins</strong>, automating build, test, and deployment workflows to accelerate release cycles.
+                        </li>
+                        <li style="margin-bottom:0.7rem; text-justify:inter-word;">
+                            Monitored and fine-tuned system performance metrics, proactively resolving <strong>cloud infrastructure issues</strong> to ensure high availability.
+                        </li>
+                        <li style="margin-bottom:0.7rem; text-justify:inter-word;">
+                            Utilized <strong>AWS services</strong> such as <strong>S3</strong>, <strong>EC2</strong>, and <strong>Elastic Beanstalk</strong> to deploy and manage scalable applications across multiple environments.
+                        </li>
+                        <li style="margin-bottom:0.7rem; text-justify:inter-word;">
+                            Created and managed <strong>S3 storage buckets</strong> for data storage and backup, ensuring reliable and cost-efficient data management.
+                        </li>
+                        <li style="margin-bottom:0.7rem; text-justify:inter-word;">
+                            Configured <strong>IAM roles</strong>, <strong>security groups</strong>, and <strong>access policies</strong> to maintain secure and compliant AWS environments.
+                        </li>
+                    </ul>
+                </div>
+        
+                <div class="timeline-item group ml-2 pl-6 border-l-4 border-transparent hover:border-sky-400 transition">
+                    <p class="text-base italic text-slate-400 mb-1">Sep 2022 – Oct 2022</p>
+                    <h3 class="text-3xl font-bold text-slate-100 group-hover:text-sky-300 transition">
+                        Full Stack Trainee (Internship)
+                    </h3>
+                    <p class="text-xl text-slate-400 mb-3">
+                        <span class="text-sky-400">Indian Tech Keys</span>
+                    </p>
+                    <!-- NEW: Added responsibilities -->
+                    <ul style="list-style-type:disc; margin-left:1.5rem; line-height:1.9; font-size:0.98rem; color:#cbd5e1; text-align:justify;">
+                        <li style="margin-bottom:0.7rem; text-justify:inter-word;">
+                            Developed responsive UI components for a web application using <strong>React.js.</strong>
+                        </li>
+                        <li style="margin-bottom:0.7rem; text-justify:inter-word;">
+                            Contributed to a <strong>Node.js</strong> backend <strong>API</strong>, assisting with endpoint creation and database integration.
+                        </li>
+                    </ul>
+                </div>
+        
+            </div>
+        </section>
+
+        <section id="projects" class="py-16 scroll-animation">
+            <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-12">
+                <i data-lucide="lightbulb" class="w-10 h-10 text-yellow-400"></i> Projects
+            </h2>
+        
+            <!-- UPDATED: Added project-card-3d wrapper --><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-6">
+                
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-6 rounded-2xl shadow-lg hover:shadow-yellow-400/30 h-full">
+                        <h3 class="text-2xl font-semibold text-slate-100 mb-2"><strong>Chatbot Application</strong></h3>
+                        <p class="text-slate-400 text-lg mb-4 flex-grow leading-relaxed">Engineered an interactive chatbot with a modern UI, robust Python (Flask) backend, and Oracle SQL integration.</p>
+                        <!-- NEW: Added Project Links --><div class="flex items-center gap-6 mt-4">
+                            <a href="https://github.com/Punith-Singh" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors">
+                                <i data-lucide="github" class="w-5 h-5"></i> GitHub
+                            </a>
+                        </div>
+                        <!-- UPDATED: Tech tags changed to skill-tag style --><div class="mt-auto flex flex-wrap gap-2 pt-4">
+                            <span class="skill-tag !text-sm !px-6 !py-1">Python</span>
+                            <span class="skill-tag !text-sm !px-6 !py-1">Flask</span>
+                            <span class="skill-tag !text-sm !px-6 !py-1">Oracle SQL</span>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-6 rounded-2xl shadow-lg hover:shadow-cyan-400/30 h-full">
+                        <h3 class="text-2xl font-semibold text-slate-100 mb-2"><strong>Password Manager</strong></h3>
+                        <p class="text-slate-400 text-lg mb-4 flex-grow leading-relaxed">Developed a secure, responsive password manager with user authentication, encryption, and credential management.</p>
+                        <!-- NEW: Added Project Links --><div class="flex items-center gap-6 mt-4">
+                            <a href="https://github.com/Punith-Singh" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors">
+                                <i data-lucide="github" class="w-5 h-5"></i> GitHub
+                            </a>
+                            <a href="#" class="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors">
+                                <i data-lucide="link" class="w-5 h-5"></i> Live Demo
+                            </a>
+                        </div>
+                        <!-- UPDATED: Tech tags changed to skill-tag style --><div class="mt-auto flex flex-wrap gap-2 pt-4">
+                            <span class="skill-tag !text-sm !px-4 !py-1">React.js</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">Node.js</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">MongoDB</span>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-6 rounded-2xl shadow-lg hover:shadow-pink-400/30 h-full">
+                        <h3 class="text-2xl font-semibold text-slate-100 mb-2"><strong>Sentiment Analysis App</strong></h3>
+                        <p class="text-slate-400 text-lg mb-4 flex-grow leading-relaxed">Built a Python & Streamlit app for Twitter sentiment analysis using Logistic Regression with interactive visualizations.</p>
+                        <!-- NEW: Added Project Links --><div class="flex items-center gap-6 mt-4">
+                            <a href="https://github.com/Punith-Singh" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors">
+                                <i data-lucide="github" class="w-5 h-5"></i> GitHub
+                            </a>
+                        </div>
+                        <!-- UPDATED: Tech tags changed to skill-tag style --><div class="mt-auto flex flex-wrap gap-2 pt-4">
+                            <span class="skill-tag !text-sm !px-4 !py-1">Python</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">Streamlit</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">Scikit-learn</span>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-6 rounded-2xl shadow-lg hover:shadow-green-400/30 h-full">
+                        <h3 class="text-2xl font-semibold text-slate-100 mb-2"><strong>Speed Detection System</strong></h3>
+                        <p class="text-slate-400 text-lg mb-4 flex-grow leading-relaxed">Used ML to measure vehicle speeds in real-time by analyzing video footage and extracting relevant features.</p>
+                        <!-- NEW: Added Project Links --><div class="flex items-center gap-6 mt-4">
+                            <a href="https://github.com/Punith-Singh" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors">
+                                <i data-lucide="github" class="w-5 h-5"></i> GitHub
+                            </a>
+                        </div>
+                        <!-- UPDATED: Tech tags changed to skill-tag style --><div class="mt-auto flex flex-wrap gap-2 pt-4">
+                            <span class="skill-tag !text-sm !px-4 !py-1">Python</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">OpenCV</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">ML</span>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-6 rounded-2xl shadow-lg hover:shadow-blue-400/30 h-full">
+                        <h3 class="text-2xl font-semibold text-slate-100 mb-2"><strong>Air Canvas</strong></h3>
+                        <p class="text-slate-400 text-lg mb-4 flex-grow leading-relaxed">Application enabling users to draw in mid-air using hand gestures tracked by computer vision and interpreted by ML.</p>
+                        <!-- NEW: Added Project Links --><div class="flex items-center gap-6 mt-4">
+                            <a href="https://github.com/Punith-Singh" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors">
+                                <i data-lucide="github" class="w-5 h-5"></i> GitHub
+                            </a>
+                        </div>
+                        <!-- UPDATED: Tech tags changed to skill-tag style --><div class="mt-auto flex flex-wrap gap-2 pt-4">
+                            <span class="skill-tag !text-sm !px-4 !py-1">Python</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">OpenCV</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">MediaPipe</span>
+                        </div>
+                    </div>
+                </div>
+        
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-6 rounded-2xl shadow-lg hover:shadow-red-400/30 h-full">
+                        <h3 class="text-2xl font-semibold text-slate-100 mb-2"><strong>Train Management System</strong></h3>
+                        <p class="text-slate-400 text-lg mb-4 flex-grow leading-relaxed">A robust web application using Oracle SQL and Python to streamline ticket booking and reservation management.</p>
+                        <!-- NEW: Added Project Links --><div class="flex items-center gap-6 mt-4">
+                            <a href="https://github.com/Punith-Singh" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-slate-400 hover:text-sky-400 transition-colors">
+                                <i data-lucide="github" class="w-5 h-5"></i> GitHub
+                            </a>
+                        </div>
+                        <!-- UPDATED: Tech tags changed to skill-tag style --><div class="mt-auto flex flex-wrap gap-2 pt-4">
+                            <span class="skill-tag !text-sm !px-4 !py-1">Python</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">Flask</span>
+                            <span class="skill-tag !text-sm !px-4 !py-1">Oracle SQL</span>
+                        </div>
+                    </div>
+                </div>
+        
+            </div>
+        </section>
+
+
+        <section id="contact" class="py-16 scroll-animation">
+            <h2 class="section-title flex items-center justify-center gap-3 text-5xl font-extrabold text-slate-100 mb-6">
+                <i data-lucide="send" class="w-10 h-10 text-red-400"></i> Get In Touch
+            </h2>
+            <p class="max-w-3xl mx-auto text-xl md:text-2xl text-slate-400 mb-8 text-center">
+                I'm currently open to new opportunities and collaborations. Feel free to reach out via email or connect with me on social media.
+            </p>
+            <div class="flex justify-center">
+                <a href="mailto:punithsingh18@gmail.com" class="inline-block px-8 py-3 text-lg bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all duration-300">
+                    Say Hello
+                </a>
+            </div>
+        
+        </section>
+    </main>
+    <footer class="border-t border-slate-700 bg-slate-950">
+        <div class="container mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center">
+        
+            <p class="text-slate-400 text-base md:text-lg mb-4 md:mb-0">
+                &copy; 2024 Punith H Singh. All Rights Reserved.
+            </p>
+    
+            <div class="flex space-x-6">
+                <!-- UPDATED: Fixed footer links --><a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-blue-400 transition-colors duration-300" aria-label="LinkedIn">
+                    <i data-lucide="linkedin" class="w-6 h-6"></i>
+                </a>
+                <a href="https://github.com/Punith-Singh" target="_blank" rel="noopener noreferrer" class="text-slate-400 hover:text-gray-100 transition-colors duration-300" aria-label="GitHub">
+                    <i data-lucide="github" class="w-6 h-6"></i>
+                </a>
+                <a href="mailto:punithsingh18@gmail.com" class="text-slate-400 hover:text-sky-400 transition-colors duration-300" aria-label="Email">
+                    <i data-lucide="mail" class="w-6 h-6"></i>
+                </a>
+            </div>
+    
+        </div>
+    </footer>
+
+    <script>
+        // This is a separate script block just to call createIcons once at the end
+        // This ensures all icons, including dynamically added ones, are rendered.
+        lucide.createIcons({ width: 24, height: 24, stroke: 'currentColor' });
+    </script>
+
+
+    <script>
+        // Main Interaction Script
+        (function() {
+            lucide.createIcons();
+
+            // --- REMOVED: Custom Cursor Logic ---
+            // Removed .cursor-dot and .cursor-outline CSS and JS logic.
+            // 'cursor: auto;' is set on the body in the style block.
+
+
+            // --- Interactive Aurora Effect ---
+            const aurora = document.getElementById('aurora-1');
+            document.addEventListener('mousemove', (e) => {
+                if (aurora) {
+                    aurora.style.transform = `translate(${e.clientX - aurora.offsetWidth / 2}px, ${e.clientY - aurora.offsetHeight / 2}px)`;
+                }
+            });
+
+            // --- Animated Starfield Background ---
+            const canvas = document.getElementById('starfield');
+            const ctx = canvas.getContext('2d');
+            let stars = [];
+            let mouse = { x: undefined, y: undefined }; // NEW: Mouse tracker for starfield
+
+            // NEW: Mouse listener for starfield
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            });
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            function createStars() {
+                stars = [];
+                for (let i = 0; i < 400; i++) {
+                    stars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        radius: Math.random() * 1.5,
+                        vx: (Math.random() - 0.5) * 0.2, // Slower base velocity
+                        vy: (Math.random() - 0.5) * 0.2  // Slower base velocity
+                    });
+                }
+            }
+
+            function drawStars() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = "lighter";
+                
+                for (let i = 0, x = stars.length; i < x; i++) {
+                    let s = stars[i];
+                    ctx.fillStyle = "#465666";
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+            
+            // UPDATED: Star update logic for mouse interaction
+            function updateStars() {
+                for (let i = 0, x = stars.length; i < x; i++) {
+                    let s = stars[i];
+
+                    // Mouse Repulsion Effect
+                    if (mouse.x !== undefined && mouse.y !== undefined) {
+                        let dx = s.x - mouse.x;
+                        let dy = s.y - mouse.y;
+                        let dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < 150) { // Repel radius
+                            let force = (150 - dist) / 150; // Force proportional to proximity
+                            s.vx += (dx / dist) * force * 0.5; // Apply force
+                            s.vy += (dy / dist) * force * 0.5;
+                        }
+                    }
+
+                    // Apply friction/drag
+                    s.vx *= 0.97; 
+                    s.vy *= 0.97;
+
+                    // Update position
+                    s.x += s.vx;
+                    s.y += s.vy;
+
+                    // Screen wrapping
+                    if (s.x < 0) s.x = canvas.width;
+                    if (s.x > canvas.width) s.x = 0;
+                    if (s.y < 0) s.y = canvas.height;
+                    if (s.y > canvas.height) s.y = 0;
+                }
+            }
+
+            function tick() {
+                drawStars();
+                updateStars();
+                requestAnimationFrame(tick);
+            }
+
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+                createStars();
+            });
+            
+            resizeCanvas();
+            createStars();
+            tick();
+
+            // --- Mobile menu toggle ---
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                const mobileMenuLinks = mobileMenu.getElementsByTagName('a');
+                for(let i = 0; i < mobileMenuLinks.length; i++) {
+                    mobileMenuLinks[i].addEventListener('click', () => {
+                        mobileMenu.classList.add('hidden');
+                    });
+                }
+            }
+
+            // --- Scroll animations ---
+            const scrollObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            document.querySelectorAll('.scroll-animation').forEach(el => {
+                scrollObserver.observe(el);
+            });
+
+            // --- NEW: Navbar Active Link Highlighting ---
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const navObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('nav-active');
+                            if (link.getAttribute('href') === `#${entry.target.id}`) {
+                                link.classList.add('nav-active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-30% 0px -70% 0px', threshold: 0 }); // Trigger when section is in the middle 30% of viewport
+
+            sections.forEach(sec => navObserver.observe(sec));
+
+
+            // --- NEW: 3D Project Card Tilt Effect ---
+            const cards = document.querySelectorAll('.project-card-3d');
+            cards.forEach(card => {
+                const cardInner = card.querySelector('.glass-card');
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const { width, height } = rect;
+                    const rotateY = (x - width / 2) / width * 15; // Max 15deg tilt
+                    const rotateX = (y - height / 2) / height * -15; // Max 15deg tilt
+
+                    cardInner.style.transform = `translateY(-8px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+                    cardInner.style.boxShadow = `0 0 50px var(--shadow-color)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    cardInner.style.transform = 'translateY(-8px)'; // Keep the hover lift
+                    cardInner.style.boxShadow = '0 0 40px var(--shadow-color)';
+                });
+            });
+
+            // Re-run createIcons after a short delay to ensure all new icons are rendered
+            setTimeout(() => lucide.createIcons(), 100);
+
+        })(); // End of main interaction script
+    </script>
+</body>
+</html>
