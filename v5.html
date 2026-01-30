@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punith H Singh - Portfolio</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- DevIcons -->
+    <link rel="stylesheet" type='text/css' href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        dark: '#050505',
+                        card: 'rgba(255, 255, 255, 0.03)',
+                    },
+                    animation: {
+                        'blob': 'blob 10s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            cursor: default;
+        }
+
+        /* --- Scroll Progress Bar --- */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            z-index: 100;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        /* --- Backgrounds --- */
+        canvas#starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .ambient-glow {
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(100px);
+        }
+
+        /* --- Spotlight Effect (The "Vercel" Look) --- */
+        .spotlight-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* The spotlight radial gradient */
+        .spotlight-card::before {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(
+                800px circle at var(--mouse-x) var(--mouse-y), 
+                rgba(255, 255, 255, 0.06),
+                transparent 40%
+            );
+            opacity: 0; /* Hidden by default, shown on hover via JS */
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            z-index: 3;
+        }
+        
+        .spotlight-card:hover::before {
+            opacity: 1;
+        }
+
+        /* The border glow spotlight */
+        .spotlight-card::after {
+            content: '';
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y), 
+                rgba(56, 189, 248, 0.4),
+                transparent 40%
+            );
+            opacity: 0;
+            z-index: 1; /* Behind content, but creates border glow if we use padding */
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        
+        /* Inner content helper to block the full bg glow */
+        .spotlight-content {
+            position: absolute;
+            inset: 1px; /* 1px border area */
+            background: #0a0a0a; /* Dark background to hide the ::after glow except at edges */
+            border-radius: inherit;
+            z-index: 2;
+        }
+
+        /* --- Magnetic Buttons --- */
+        .btn-magnetic {
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* --- Text Scramble --- */
+        .scramble-text {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* --- Utilities --- */
+        .text-gradient {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="antialiased selection:bg-sky-500/30 selection:text-sky-200">
+
+    <!-- Scroll Progress -->
+    <div id="progress-bar"></div>
+
+    <!-- Background Elements -->
+    <canvas id="starfield"></canvas>
+    <div class="ambient-glow animate-blob" style="top: -20%; left: -20%; background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, rgba(0,0,0,0) 70%);"></div>
+    <div class="ambient-glow animate-blob" style="bottom: -20%; right: -20%; background: radial-gradient(circle, rgba(129, 140, 248, 0.1) 0%, rgba(0,0,0,0) 70%); animation-delay: 5s;"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300 border-b border-transparent" id="navbar">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-md -z-10"></div>
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2 group">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white text-sm group-hover:rotate-12 transition-transform">P</div>
+                <span class="group-hover:text-sky-300 transition-colors">Punith<span class="text-sky-500">.</span></span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#about" class="text-sm font-medium text-slate-400 hover:text-white transition-colors">About</a>
+                <a href="#skills" class="text-sm font-medium text-slate-400 hover:text-white transition-colors">Skills</a>
+                <a href="#projects" class="text-sm font-medium text-slate-400 hover:text-white transition-colors">Projects</a>
+                <a href="#contact" class="px-5 py-2 text-sm font-semibold text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-all backdrop-blur-sm hover:scale-105 active:scale-95">
+                    Contact
+                </a>
+            </div>
+
+            <button id="mobile-toggle" class="md:hidden text-white p-2">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+        
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-black/95 border-b border-white/10 backdrop-blur-xl">
+            <div class="flex flex-col p-6 space-y-4">
+                <a href="#about" class="text-slate-300">About</a>
+                <a href="#skills" class="text-slate-300">Skills</a>
+                <a href="#projects" class="text-slate-300">Projects</a>
+                <a href="#contact" class="text-sky-400 font-semibold">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10">
+
+        <!-- Hero Section -->
+        <section id="home" class="min-h-screen flex items-center justify-center pt-20 px-6 relative overflow-hidden">
+            <div class="text-center max-w-5xl mx-auto z-10 reveal active">
+                
+                <div class="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-sky-500/20 bg-sky-500/5 text-sky-300 text-xs font-mono tracking-widest uppercase animate-pulse-slow">
+                    <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+                    System Online
+                </div>
+
+                <h1 class="text-5xl md:text-8xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+                    <span class="block text-slate-400 text-2xl md:text-4xl font-light mb-2">Hello, I'm</span>
+                    <span class="scramble-text text-gradient" data-value="Punith H Singh">Punith H Singh</span>
+                </h1>
+                
+                <div class="text-lg md:text-2xl text-slate-400 mb-12 h-8 font-light flex justify-center items-center gap-2">
+                    &lt; <span id="typewriter" class="text-white font-medium"></span> /&gt;
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-6">
+                    <a href="#projects" class="btn-magnetic group relative px-8 py-4 bg-sky-600 text-white font-semibold rounded-xl overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-r from-sky-400 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <span class="relative flex items-center gap-2">
+                            View Projects <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </span>
+                    </a>
+                    <a href="#contact" class="btn-magnetic px-8 py-4 bg-white/5 border border-white/10 hover:bg-white/10 text-white font-medium rounded-xl transition-all backdrop-blur-sm">
+                        Contact Me
+                    </a>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50">
+                <i data-lucide="chevrons-down" class="w-6 h-6 text-slate-400"></i>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-32 px-6 bg-gradient-to-b from-transparent to-black/20">
+            <div class="container mx-auto max-w-5xl">
+                <div class="spotlight-card rounded-3xl p-1 bg-gradient-to-b from-white/10 to-transparent reveal">
+                    <div class="spotlight-content rounded-[22px] bg-[#080808] p-8 md:p-12 relative overflow-hidden">
+                        <!-- Decorative Grid -->
+                        <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+
+                        <div class="relative z-10 flex flex-col md:flex-row items-center gap-16">
+                            <div class="w-full md:w-1/3 flex justify-center">
+                                <div class="relative group">
+                                    <div class="absolute -inset-1 bg-gradient-to-r from-sky-500 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                                    <div class="relative w-48 h-48 md:w-64 md:h-64 rounded-2xl bg-slate-900 border border-white/10 flex items-center justify-center overflow-hidden">
+                                         <!-- If you have an image, put it here. Otherwise, icon -->
+                                         <i data-lucide="user" class="w-24 h-24 text-slate-700 group-hover:text-sky-400 transition-colors duration-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="w-full md:w-2/3">
+                                <h2 class="text-3xl md:text-4xl font-bold mb-6 flex items-center gap-3">
+                                    <span class="text-sky-500">01.</span> <span class="text-white">The Profile</span>
+                                </h2>
+                                <p class="text-lg text-slate-400 leading-relaxed mb-6">
+                                    I don't just write code; I engineer solutions. As a Computer Science graduate, I specialize in building <strong class="text-sky-300">scalable web applications</strong> and <strong class="text-indigo-300">robust cloud architectures</strong>.
+                                </p>
+                                <p class="text-lg text-slate-400 leading-relaxed mb-10">
+                                    Currently obsessed with DevOps pipelines, AI integration, and making the web feel faster.
+                                </p>
+                                
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div class="p-4 rounded-xl bg-white/5 border border-white/5 hover:border-sky-500/30 transition-colors group">
+                                        <h3 class="text-4xl font-bold text-white mb-1 counter" data-target="2">0</h3>
+                                        <p class="text-xs text-sky-400 font-mono uppercase tracking-wider">Years Experience</p>
+                                    </div>
+                                    <div class="p-4 rounded-xl bg-white/5 border border-white/5 hover:border-indigo-500/30 transition-colors group">
+                                        <h3 class="text-4xl font-bold text-white mb-1 counter" data-target="15">0</h3>
+                                        <p class="text-xs text-indigo-400 font-mono uppercase tracking-wider">Projects Completed</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="py-24 px-6">
+            <div class="container mx-auto max-w-6xl">
+                <div class="text-center mb-20 reveal">
+                    <h2 class="text-3xl md:text-5xl font-bold mb-4 text-white">
+                        <span class="text-sky-500">02.</span> Technical Arsenal
+                    </h2>
+                    <p class="text-slate-500 font-mono">Tools deployed in production</p>
+                </div>
+
+                <!-- Skill Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 reveal">
+                    <!-- Python -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-python-plain text-5xl text-slate-400 group-hover:text-yellow-400 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">Python</span>
+                    </div>
+                    <!-- JS -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-javascript-plain text-5xl text-slate-400 group-hover:text-yellow-300 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">JavaScript</span>
+                    </div>
+                    <!-- React -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-react-original text-5xl text-slate-400 group-hover:text-sky-400 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">React</span>
+                    </div>
+                    <!-- Node -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-nodejs-plain text-5xl text-slate-400 group-hover:text-green-500 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">Node.js</span>
+                    </div>
+                    <!-- Docker -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-docker-plain text-5xl text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">Docker</span>
+                    </div>
+                    <!-- K8s -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-kubernetes-plain text-5xl text-slate-400 group-hover:text-blue-400 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">Kubernetes</span>
+                    </div>
+                    <!-- AWS -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-amazonwebservices-plain-wordmark text-5xl text-slate-400 group-hover:text-orange-500 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">AWS</span>
+                    </div>
+                    <!-- MongoDB -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-mongodb-plain text-5xl text-slate-400 group-hover:text-green-400 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">MongoDB</span>
+                    </div>
+                    <!-- SQL -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-mysql-plain text-5xl text-slate-400 group-hover:text-blue-300 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">SQL</span>
+                    </div>
+                    <!-- Git -->
+                    <div class="spotlight-card rounded-xl p-6 flex flex-col items-center gap-4 group transition-all duration-300 hover:-translate-y-2">
+                        <i class="devicon-git-plain text-5xl text-slate-400 group-hover:text-red-500 transition-colors"></i>
+                        <span class="text-sm font-mono text-slate-400 group-hover:text-white">Git</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section id="experience" class="py-24 px-6 bg-black/20">
+             <div class="container mx-auto max-w-4xl">
+                <h2 class="text-3xl md:text-5xl font-bold mb-16 text-center reveal text-white">
+                    <span class="text-sky-500">03.</span> Career Timeline
+                </h2>
+
+                <div class="relative border-l border-white/10 ml-3 md:ml-6 space-y-16">
+                    
+                    <!-- Item 1 -->
+                    <div class="relative pl-8 md:pl-16 reveal group">
+                        <!-- Node -->
+                        <div class="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-sky-500 ring-4 ring-black shadow-[0_0_15px_rgba(56,189,248,0.5)] group-hover:scale-150 transition-transform duration-300"></div>
+                        
+                        <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between mb-2">
+                            <h3 class="text-2xl font-bold text-white group-hover:text-sky-400 transition-colors">Operations Analyst Consultant</h3>
+                            <span class="text-sm font-mono text-slate-500">Feb 2025 – Present</span>
+                        </div>
+                        <div class="text-lg font-medium text-indigo-400 mb-4">CRED (Dreamplug Technologies)</div>
+                        <p class="text-slate-400 leading-relaxed">Analyzing operational data and optimizing workflows for high-scale financial technology systems.</p>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="relative pl-8 md:pl-16 reveal group">
+                        <div class="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-slate-600 ring-4 ring-black group-hover:bg-sky-500 group-hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] group-hover:scale-150 transition-all duration-300"></div>
+                        
+                        <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between mb-2">
+                            <h3 class="text-2xl font-bold text-white group-hover:text-sky-400 transition-colors">AI-DevOps Engineer Intern</h3>
+                            <span class="text-sm font-mono text-slate-500">Sep 2024 – Feb 2025</span>
+                        </div>
+                        <div class="text-lg font-medium text-indigo-400 mb-4">Rooman Technologies</div>
+                        <ul class="list-none space-y-2 text-slate-400">
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-sky-500 mt-0.5 shrink-0"></i>
+                                <span>Orchestrated <strong>Docker & Kubernetes</strong> deployments on IBM Cloud.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-sky-500 mt-0.5 shrink-0"></i>
+                                <span>Engineered automated CI/CD pipelines using <strong>Jenkins</strong>.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-sky-500 mt-0.5 shrink-0"></i>
+                                <span>Secured AWS infrastructure using IAM policies and VPC configurations.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="relative pl-8 md:pl-16 reveal group">
+                        <div class="absolute -left-[5px] top-2 w-2.5 h-2.5 rounded-full bg-slate-600 ring-4 ring-black group-hover:bg-sky-500 group-hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] group-hover:scale-150 transition-all duration-300"></div>
+                        
+                        <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between mb-2">
+                            <h3 class="text-2xl font-bold text-white group-hover:text-sky-400 transition-colors">Full Stack Trainee</h3>
+                            <span class="text-sm font-mono text-slate-500">Sep 2022 – Oct 2022</span>
+                        </div>
+                        <div class="text-lg font-medium text-indigo-400 mb-4">Indian Tech Keys</div>
+                        <p class="text-slate-400">Developed responsive front-end components with React.js and integrated RESTful APIs powered by Node.js.</p>
+                    </div>
+
+                </div>
+             </div>
+        </section>
+
+        <!-- Projects Section (Spotlight Cards) -->
+        <section id="projects" class="py-24 px-6">
+            <div class="container mx-auto max-w-7xl">
+                <h2 class="text-3xl md:text-5xl font-bold mb-16 text-center reveal text-white">
+                    <span class="text-sky-500">04.</span> Featured Works
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Card 1 -->
+                    <div class="spotlight-card rounded-2xl h-full reveal group">
+                        <div class="p-8 h-full flex flex-col relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="p-3 bg-sky-500/10 rounded-xl text-sky-400">
+                                    <i data-lucide="message-square" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex gap-4">
+                                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-sky-400 transition-colors">Chatbot Application</h3>
+                            <p class="text-slate-400 mb-8 flex-grow text-sm leading-relaxed">
+                                An intelligent conversational agent built with Python Flask and Oracle SQL. Features dynamic response generation and database persistence.
+                            </p>
+                            
+                            <div class="flex flex-wrap gap-2 mt-auto">
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-sky-300 border border-white/5">Python</span>
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-sky-300 border border-white/5">Flask</span>
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-sky-300 border border-white/5">Oracle SQL</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="spotlight-card rounded-2xl h-full reveal group">
+                        <div class="p-8 h-full flex flex-col relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="p-3 bg-indigo-500/10 rounded-xl text-indigo-400">
+                                    <i data-lucide="shield" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex gap-4">
+                                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-indigo-400 transition-colors">Secure Vault</h3>
+                            <p class="text-slate-400 mb-8 flex-grow text-sm leading-relaxed">
+                                MERN stack password manager featuring military-grade encryption, JWT authentication, and a responsive dashboard.
+                            </p>
+                            
+                            <div class="flex flex-wrap gap-2 mt-auto">
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-indigo-300 border border-white/5">React</span>
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-indigo-300 border border-white/5">Node.js</span>
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-indigo-300 border border-white/5">MongoDB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="spotlight-card rounded-2xl h-full reveal group">
+                        <div class="p-8 h-full flex flex-col relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="p-3 bg-pink-500/10 rounded-xl text-pink-400">
+                                    <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex gap-4">
+                                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-pink-400 transition-colors">Sentiment Analysis</h3>
+                            <p class="text-slate-400 mb-8 flex-grow text-sm leading-relaxed">
+                                ML pipeline analyzing Twitter data using Logistic Regression. Visualized with Streamlit to display real-time sentiment trends.
+                            </p>
+                            
+                            <div class="flex flex-wrap gap-2 mt-auto">
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-pink-300 border border-white/5">Python</span>
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-pink-300 border border-white/5">Scikit-learn</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4 -->
+                    <div class="spotlight-card rounded-2xl h-full reveal group">
+                        <div class="p-8 h-full flex flex-col relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="p-3 bg-orange-500/10 rounded-xl text-orange-400">
+                                    <i data-lucide="video" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex gap-4">
+                                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-orange-400 transition-colors">Speed Detection</h3>
+                            <p class="text-slate-400 mb-8 flex-grow text-sm leading-relaxed">
+                                Computer Vision system calculating vehicle velocity from video feeds using frame differencing and contour tracking.
+                            </p>
+                            
+                            <div class="flex flex-wrap gap-2 mt-auto">
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-orange-300 border border-white/5">OpenCV</span>
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-orange-300 border border-white/5">Python</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 5 -->
+                    <div class="spotlight-card rounded-2xl h-full reveal group">
+                        <div class="p-8 h-full flex flex-col relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="p-3 bg-purple-500/10 rounded-xl text-purple-400">
+                                    <i data-lucide="pen-tool" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex gap-4">
+                                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-purple-400 transition-colors">Air Canvas</h3>
+                            <p class="text-slate-400 mb-8 flex-grow text-sm leading-relaxed">
+                                Interactive AR tool allowing users to draw in mid-air using hand gestures tracked via MediaPipe.
+                            </p>
+                            
+                            <div class="flex flex-wrap gap-2 mt-auto">
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-purple-300 border border-white/5">MediaPipe</span>
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-purple-300 border border-white/5">CV</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 6 -->
+                    <div class="spotlight-card rounded-2xl h-full reveal group">
+                        <div class="p-8 h-full flex flex-col relative z-10">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="p-3 bg-emerald-500/10 rounded-xl text-emerald-400">
+                                    <i data-lucide="train" class="w-6 h-6"></i>
+                                </div>
+                                <div class="flex gap-4">
+                                    <a href="#" class="text-slate-500 hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-white mb-3 group-hover:text-emerald-400 transition-colors">Train Management</h3>
+                            <p class="text-slate-400 mb-8 flex-grow text-sm leading-relaxed">
+                                Comprehensive database system for railway ticketing and scheduling using advanced SQL queries.
+                            </p>
+                            
+                            <div class="flex flex-wrap gap-2 mt-auto">
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-emerald-300 border border-white/5">SQL</span>
+                                <span class="px-3 py-1 text-xs font-mono rounded-full bg-white/5 text-emerald-300 border border-white/5">Python</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-24 px-6 relative overflow-hidden">
+            <!-- Grid Background -->
+            <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-50"></div>
+            
+            <div class="container mx-auto max-w-4xl text-center reveal relative z-10">
+                <p class="text-sky-400 font-mono mb-4">05. What's Next?</p>
+                <h2 class="text-4xl md:text-6xl font-bold text-white mb-8">Get In Touch</h2>
+                <p class="text-xl text-slate-400 mb-12 leading-relaxed max-w-2xl mx-auto">
+                    I'm currently seeking new opportunities. Whether you have a question or just want to say hi, my inbox is always open.
+                </p>
+                
+                <a href="mailto:punithsingh18@gmail.com" class="btn-magnetic inline-block px-10 py-5 text-lg font-bold text-white bg-transparent border border-sky-500 rounded-xl hover:bg-sky-500/10 transition-all shadow-[0_0_20px_rgba(56,189,248,0.1)] hover:shadow-[0_0_40px_rgba(56,189,248,0.3)]">
+                    Say Hello
+                </a>
+                
+                <div class="mt-16 flex justify-center gap-8">
+                    <a href="https://github.com/Punith-Singh" target="_blank" class="text-slate-400 hover:text-white hover:-translate-y-1 transition-all"><i data-lucide="github" class="w-6 h-6"></i></a>
+                    <a href="https://linkedin.com" target="_blank" class="text-slate-400 hover:text-white hover:-translate-y-1 transition-all"><i data-lucide="linkedin" class="w-6 h-6"></i></a>
+                    <a href="mailto:punithsingh18@gmail.com" class="text-slate-400 hover:text-white hover:-translate-y-1 transition-all"><i data-lucide="mail" class="w-6 h-6"></i></a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black py-8 text-center text-slate-600 text-sm border-t border-white/5 font-mono">
+        <p>Designed & Built by Punith H Singh</p>
+    </footer>
+
+    <script>
+        // --- 1. Icons ---
+        lucide.createIcons();
+
+        // --- 2. Hacker Text Scramble Effect ---
+        class TextScramble {
+            constructor(el) {
+                this.el = el;
+                this.chars = '!<>-_\\/[]{}—=+*^?#________';
+                this.update = this.update.bind(this);
+            }
+            setText(newText) {
+                const oldText = this.el.innerText;
+                const length = Math.max(oldText.length, newText.length);
+                const promise = new Promise((resolve) => this.resolve = resolve);
+                this.queue = [];
+                for (let i = 0; i < length; i++) {
+                    const from = oldText[i] || '';
+                    const to = newText[i] || '';
+                    const start = Math.floor(Math.random() * 40);
+                    const end = start + Math.floor(Math.random() * 40);
+                    this.queue.push({ from, to, start, end });
+                }
+                cancelAnimationFrame(this.frameRequest);
+                this.frame = 0;
+                this.update();
+                return promise;
+            }
+            update() {
+                let output = '';
+                let complete = 0;
+                for (let i = 0, n = this.queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = this.queue[i];
+                    if (this.frame >= end) {
+                        complete++;
+                        output += to;
+                    } else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = this.chars[Math.floor(Math.random() * this.chars.length)];
+                            this.queue[i].char = char;
+                        }
+                        output += `<span class="text-sky-500">${char}</span>`;
+                    } else {
+                        output += from;
+                    }
+                }
+                this.el.innerHTML = output;
+                if (complete === this.queue.length) {
+                    this.resolve();
+                } else {
+                    this.frameRequest = requestAnimationFrame(this.update);
+                    this.frame++;
+                }
+            }
+        }
+
+        // Initialize Scramble on Load
+        const el = document.querySelector('.scramble-text');
+        const fx = new TextScramble(el);
+        let counter = 0;
+        const next = () => {
+            fx.setText('Punith H Singh').then(() => {
+                // Optional: Loop different titles
+            });
+        };
+        setTimeout(next, 500); // Start shortly after load
+
+
+        // --- 3. Spotlight Effect (Mouse Tracking) ---
+        const cards = document.querySelectorAll('.spotlight-card');
+        document.body.addEventListener('mousemove', (e) => {
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // --- 4. Interactive Constellation Canvas ---
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let stars = [];
+        const mouse = { x: null, y: null };
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        class Star {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.3; 
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.size = Math.random() * 1.5;
+                this.baseColor = Math.random() > 0.8 ? '#38bdf8' : '#ffffff'; 
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+            }
+            draw() {
+                ctx.fillStyle = this.baseColor;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 80; i++) stars.push(new Star());
+        }
+
+        function animateStars() {
+            ctx.clearRect(0, 0, width, height);
+            stars.forEach((star, index) => {
+                star.update();
+                star.draw();
+                
+                // Mouse Connection
+                if (mouse.x) {
+                    const dx = star.x - mouse.x;
+                    const dy = star.y - mouse.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 150) {
+                        ctx.strokeStyle = `rgba(56, 189, 248, ${1 - dist/150})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(star.x, star.y);
+                        ctx.lineTo(mouse.x, mouse.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(animateStars);
+        }
+
+        window.addEventListener('resize', () => { resize(); initStars(); });
+        window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+        resize();
+        initStars();
+        animateStars();
+
+        // --- 5. Magnetic Buttons ---
+        const magnets = document.querySelectorAll('.btn-magnetic');
+        magnets.forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translate(0, 0)';
+            });
+        });
+
+        // --- 6. Scroll Progress Bar ---
+        window.addEventListener('scroll', () => {
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (scrollTop / scrollHeight) * 100;
+            document.getElementById('progress-bar').style.width = scrolled + '%';
+        });
+
+        // --- 7. Counter Animation (CountUp) ---
+        const counters = document.querySelectorAll('.counter');
+        const counterObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target;
+                    const target = +counter.getAttribute('data-target');
+                    const duration = 1500; // ms
+                    const startTime = performance.now();
+                    
+                    const updateCount = (currentTime) => {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        
+                        // Ease out quart
+                        const ease = 1 - Math.pow(1 - progress, 4);
+                        
+                        counter.innerText = Math.floor(ease * target) + "+";
+                        
+                        if (progress < 1) {
+                            requestAnimationFrame(updateCount);
+                        } else {
+                            counter.innerText = target + "+";
+                        }
+                    };
+                    requestAnimationFrame(updateCount);
+                    observer.unobserve(counter);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        counters.forEach(c => counterObserver.observe(c));
+
+        // --- 8. Typewriter Effect (Subtitle) ---
+        const words = ["Software Developer", "Cloud Engineer", "Problem Solver"];
+        let i = 0;
+        function typeWriter() {
+            const heading = document.getElementById("typewriter");
+            const word = words[i];
+            let j = 0;
+            let isDeleting = false;
+            function loop() {
+                heading.innerHTML = isDeleting ? word.substring(0, j - 1) : word.substring(0, j + 1);
+                j = isDeleting ? j - 1 : j + 1;
+                if (!isDeleting && j === word.length) {
+                    isDeleting = true;
+                    setTimeout(loop, 2000);
+                } else if (isDeleting && j === 0) {
+                    isDeleting = false;
+                    i = (i + 1) % words.length;
+                    setTimeout(loop, 500);
+                } else {
+                    setTimeout(loop, isDeleting ? 50 : 100);
+                }
+            }
+            loop();
+        }
+        typeWriter();
+
+        // --- 9. Reveal on Scroll ---
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        // Mobile Menu
+        const menuBtn = document.getElementById('mobile-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+
+    </script>
+</body>
+</html>
