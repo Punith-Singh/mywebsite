@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punith H Singh | Portfolio</title>
+    <meta name="description" content="Portfolio of Punith H Singh - Computer Science Engineer & Software Developer">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        heading: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        bg: '#0B0F19',
+                        card: 'rgba(30, 41, 59, 0.4)',
+                        accent: '#38bdf8',
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #0B0F19;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Background Glows */
+        .ambient-light {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: blob 10s infinite alternate;
+        }
+        .light-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: rgba(56, 189, 248, 0.3); }
+        .light-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background: rgba(139, 92, 246, 0.2); }
+        .light-3 { top: 40%; left: 40%; width: 300px; height: 300px; background: rgba(236, 72, 153, 0.15); animation-delay: 2s; }
+
+        canvas#starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(30, 41, 59, 0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-nav {
+            background: rgba(11, 15, 25, 0.8);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Typography & Gradients */
+        .text-gradient {
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-heading {
+            @apply text-4xl md:text-5xl font-bold text-center mb-16 relative inline-block;
+        }
+        .section-heading::after {
+            content: '';
+            @apply absolute -bottom-4 left-1/2 -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-sky-500 to-purple-500 rounded-full;
+        }
+
+        /* Navigation Active State */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #38bdf8;
+            transition: width 0.3s;
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+        .nav-link.active {
+            color: #38bdf8;
+        }
+
+        /* 3D Tilt Card Base */
+        .tilt-card {
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+        }
+        .tilt-content {
+            transform: translateZ(20px);
+        }
+
+        /* Timeline Specifics */
+        .timeline-line {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #38bdf8, #818cf8, transparent);
+        }
+        
+        /* Typewriter Cursor */
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            background-color: #38bdf8;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Scroll Animation Utility */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-sky-500/30 selection:text-sky-200">
+
+    <!-- Background Elements -->
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
+    <canvas id="starfield"></canvas>
+
+    <!-- Navigation -->
+    <header class="fixed top-0 w-full z-50 glass-nav transition-all duration-300" id="navbar">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold font-heading tracking-tight text-slate-100 hover:text-sky-400 transition-colors">
+                Punith<span class="text-sky-500">.</span>dev
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#about" class="nav-link text-sm font-medium text-slate-300 hover:text-white transition-colors">About</a>
+                <a href="#skills" class="nav-link text-sm font-medium text-slate-300 hover:text-white transition-colors">Skills</a>
+                <a href="#experience" class="nav-link text-sm font-medium text-slate-300 hover:text-white transition-colors">Experience</a>
+                <a href="#projects" class="nav-link text-sm font-medium text-slate-300 hover:text-white transition-colors">Projects</a>
+                <a href="#contact" class="px-5 py-2 bg-sky-600 hover:bg-sky-500 text-white text-sm font-semibold rounded-full transition-all shadow-lg shadow-sky-500/20 hover:shadow-sky-500/40 transform hover:-translate-y-0.5">
+                    Hire Me
+                </a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white focus:outline-none">
+                <i data-lucide="menu" class="w-7 h-7"></i>
+            </button>
+        </nav>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="hidden absolute top-full left-0 w-full glass border-t border-slate-700/50 p-6 flex-col space-y-4 md:hidden shadow-2xl">
+            <a href="#about" class="block text-slate-300 hover:text-sky-400 py-2">About</a>
+            <a href="#skills" class="block text-slate-300 hover:text-sky-400 py-2">Skills</a>
+            <a href="#experience" class="block text-slate-300 hover:text-sky-400 py-2">Experience</a>
+            <a href="#projects" class="block text-slate-300 hover:text-sky-400 py-2">Projects</a>
+            <a href="#contact" class="block w-full text-center px-5 py-3 bg-sky-600 text-white font-semibold rounded-lg">Contact Me</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="min-h-screen flex items-center justify-center relative pt-20">
+            <div class="container mx-auto px-6 text-center z-10">
+                <div class="inline-block px-3 py-1 mb-6 border border-sky-500/30 rounded-full bg-sky-500/10 backdrop-blur-sm animate-fade-in-up">
+                    <span class="text-sky-400 text-sm font-medium tracking-wide">Available for Work</span>
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold font-heading mb-6 tracking-tight text-white drop-shadow-lg">
+                    Hi, I'm <span class="text-gradient">Punith</span>
+                </h1>
+                
+                <p class="text-xl md:text-3xl text-slate-400 font-light mb-8 h-8 md:h-12">
+                    I am a <span id="typewriter" class="text-sky-400 font-normal"></span><span class="cursor">|</span>
+                </p>
+
+                <p class="max-w-2xl mx-auto text-slate-400 mb-10 leading-relaxed">
+                    Building scalable, pixel-perfect web experiences with modern technologies. 
+                    Focused on creating impact through code.
+                </p>
+
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="#projects" class="group px-8 py-3.5 bg-slate-100 text-slate-900 font-bold rounded-full transition-all hover:bg-white hover:scale-105 flex items-center justify-center gap-2">
+                        View Work 
+                        <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                    </a>
+                    <a href="#contact" class="px-8 py-3.5 bg-transparent border border-slate-600 text-white font-semibold rounded-full transition-all hover:border-sky-400 hover:text-sky-400 hover:bg-sky-400/10">
+                        Contact Me
+                    </a>
+                </div>
+                
+                <!-- Social Links -->
+                <div class="mt-12 flex justify-center gap-6">
+                    <a href="https://github.com/Punith-Singh" target="_blank" class="p-3 bg-slate-800/50 rounded-full hover:bg-slate-700 hover:text-sky-400 transition-all border border-slate-700 hover:border-sky-500/50">
+                        <i data-lucide="github" class="w-5 h-5"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" class="p-3 bg-slate-800/50 rounded-full hover:bg-slate-700 hover:text-sky-400 transition-all border border-slate-700 hover:border-sky-500/50">
+                        <i data-lucide="linkedin" class="w-5 h-5"></i>
+                    </a>
+                    <a href="mailto:punithsingh18@gmail.com" class="p-3 bg-slate-800/50 rounded-full hover:bg-slate-700 hover:text-sky-400 transition-all border border-slate-700 hover:border-sky-500/50">
+                        <i data-lucide="mail" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator -->
+            <a href="#about" class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-500 hover:text-sky-400 transition-colors animate-bounce">
+                <span class="text-xs uppercase tracking-widest">Scroll</span>
+                <i data-lucide="chevrons-down" class="w-5 h-5"></i>
+            </a>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-24 relative">
+            <div class="container mx-auto px-6">
+                <div class="flex flex-col items-center">
+                    <h2 class="section-heading text-white">About Me</h2>
+                    
+                    <div class="glass p-8 md:p-12 rounded-3xl max-w-4xl w-full reveal">
+                        <div class="flex flex-col md:flex-row gap-10 items-center">
+                            <div class="relative group">
+                                <div class="absolute -inset-1 bg-gradient-to-r from-sky-400 to-purple-500 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+                                <div class="relative w-48 h-48 bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-700">
+                                    <i data-lucide="user" class="w-20 h-20 text-slate-500"></i>
+                                    <!-- Replace the above <i> with an <img> tag for your photo -->
+                                </div>
+                            </div>
+                            
+                            <div class="flex-1 text-center md:text-left">
+                                <h3 class="text-2xl font-bold text-white mb-4">Computer Science Engineer</h3>
+                                <p class="text-slate-400 leading-relaxed mb-6">
+                                    I am a passionate developer with a knack for building robust applications. 
+                                    My journey involves exploring Cloud Computing, perfecting Web Development, and diving into Mobile Apps.
+                                    I am a proactive learner who thrives in collaborative environments, constantly seeking to optimize performance and user experience.
+                                </p>
+                                <div class="grid grid-cols-2 gap-4 text-left">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full bg-sky-500"></div>
+                                        <span class="text-slate-300 text-sm">Web Development</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                                        <span class="text-slate-300 text-sm">Cloud Computing</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                        <span class="text-slate-300 text-sm">Backend Systems</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-2 rounded-full bg-pink-500"></div>
+                                        <span class="text-slate-300 text-sm">UI/UX Design</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="py-24 bg-slate-900/30">
+            <div class="container mx-auto px-6">
+                <h2 class="section-heading text-white w-full text-center">Technical Arsenal</h2>
+                
+                <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- Languages -->
+                    <div class="reveal glass p-8 rounded-2xl border-t-4 border-t-sky-500 hover:translate-y-[-5px] transition-transform duration-300">
+                        <div class="flex items-center gap-3 mb-6">
+                            <i data-lucide="code-2" class="text-sky-400"></i>
+                            <h3 class="text-xl font-bold text-white">Languages</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-sky-500/10 text-sky-300 border border-sky-500/20 rounded-lg text-sm">Python</span>
+                            <span class="px-3 py-1 bg-sky-500/10 text-sky-300 border border-sky-500/20 rounded-lg text-sm">JavaScript</span>
+                            <span class="px-3 py-1 bg-sky-500/10 text-sky-300 border border-sky-500/20 rounded-lg text-sm">Java</span>
+                            <span class="px-3 py-1 bg-sky-500/10 text-sky-300 border border-sky-500/20 rounded-lg text-sm">SQL</span>
+                            <span class="px-3 py-1 bg-sky-500/10 text-sky-300 border border-sky-500/20 rounded-lg text-sm">C++</span>
+                        </div>
+                    </div>
+
+                    <!-- Frameworks -->
+                    <div class="reveal glass p-8 rounded-2xl border-t-4 border-t-purple-500 hover:translate-y-[-5px] transition-transform duration-300" style="transition-delay: 100ms;">
+                        <div class="flex items-center gap-3 mb-6">
+                            <i data-lucide="layers" class="text-purple-400"></i>
+                            <h3 class="text-xl font-bold text-white">Frameworks & DB</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-lg text-sm">React.js</span>
+                            <span class="px-3 py-1 bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-lg text-sm">Node.js</span>
+                            <span class="px-3 py-1 bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-lg text-sm">Flask</span>
+                            <span class="px-3 py-1 bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-lg text-sm">Flutter</span>
+                            <span class="px-3 py-1 bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-lg text-sm">MongoDB</span>
+                        </div>
+                    </div>
+
+                    <!-- Tools -->
+                    <div class="reveal glass p-8 rounded-2xl border-t-4 border-t-green-500 hover:translate-y-[-5px] transition-transform duration-300" style="transition-delay: 200ms;">
+                        <div class="flex items-center gap-3 mb-6">
+                            <i data-lucide="wrench" class="text-green-400"></i>
+                            <h3 class="text-xl font-bold text-white">DevOps & Tools</h3>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-green-500/10 text-green-300 border border-green-500/20 rounded-lg text-sm">Docker</span>
+                            <span class="px-3 py-1 bg-green-500/10 text-green-300 border border-green-500/20 rounded-lg text-sm">Kubernetes</span>
+                            <span class="px-3 py-1 bg-green-500/10 text-green-300 border border-green-500/20 rounded-lg text-sm">AWS</span>
+                            <span class="px-3 py-1 bg-green-500/10 text-green-300 border border-green-500/20 rounded-lg text-sm">Git</span>
+                            <span class="px-3 py-1 bg-green-500/10 text-green-300 border border-green-500/20 rounded-lg text-sm">Jenkins</span>
+                            <span class="px-3 py-1 bg-green-500/10 text-green-300 border border-green-500/20 rounded-lg text-sm">IBM Cloud</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section id="experience" class="py-24 relative overflow-hidden">
+            <div class="container mx-auto px-6">
+                <h2 class="section-heading text-white w-full text-center">Journey</h2>
+                
+                <div class="max-w-4xl mx-auto relative pl-8 md:pl-0">
+                    <!-- Vertical Line -->
+                    <div class="timeline-line md:left-1/2 md:-ml-[1px]"></div>
+
+                    <!-- Experience Item 1 -->
+                    <div class="relative mb-12 md:mb-16 reveal">
+                        <div class="md:flex items-center justify-between w-full">
+                            <!-- Left Side (Date for desktop) -->
+                            <div class="hidden md:block w-5/12 text-right pr-8">
+                                <h3 class="text-2xl font-bold text-sky-400">Operations Analyst</h3>
+                                <p class="text-slate-400 mt-1">Feb 2025 - Present</p>
+                            </div>
+                            
+                            <!-- Center Dot -->
+                            <div class="absolute left-[-37px] md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-bg border-4 border-sky-500 z-10 shadow-[0_0_15px_rgba(56,189,248,0.5)]"></div>
+
+                            <!-- Right Side (Content) -->
+                            <div class="w-full md:w-5/12 pl-0 md:pl-8">
+                                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                                    <div class="md:hidden mb-2">
+                                        <h3 class="text-xl font-bold text-sky-400">Operations Analyst</h3>
+                                        <p class="text-slate-400 text-sm">Feb 2025 - Present</p>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-white">CRED</h4>
+                                    <p class="text-slate-500 text-sm italic mb-3">Dreamplug Technologies Pvt. Ltd.</p>
+                                    <p class="text-slate-300 text-sm leading-relaxed">
+                                        Contributing to operational excellence and data-driven decision-making within a high-growth fintech environment.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Experience Item 2 -->
+                    <div class="relative mb-12 md:mb-16 reveal">
+                        <div class="md:flex items-center justify-between w-full flex-row-reverse">
+                            <!-- Right Side (Date for desktop - actually left visually) -->
+                            <div class="hidden md:block w-5/12 text-left pl-8">
+                                <h3 class="text-2xl font-bold text-purple-400">AI-DevOps Intern</h3>
+                                <p class="text-slate-400 mt-1">Sep 2024 - Feb 2025</p>
+                            </div>
+                            
+                            <!-- Center Dot -->
+                            <div class="absolute left-[-37px] md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-bg border-4 border-purple-500 z-10 shadow-[0_0_15px_rgba(168,85,247,0.5)]"></div>
+
+                            <!-- Left Side (Content) -->
+                            <div class="w-full md:w-5/12 pr-0 md:pr-8">
+                                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                                    <div class="md:hidden mb-2">
+                                        <h3 class="text-xl font-bold text-purple-400">AI-DevOps Intern</h3>
+                                        <p class="text-slate-400 text-sm">Sep 2024 - Feb 2025</p>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-white">Rooman Technologies</h4>
+                                    <ul class="mt-4 space-y-2 text-slate-300 text-sm list-disc pl-4">
+                                        <li>Deployed cloud-native apps using Docker & Kubernetes on IBM Cloud.</li>
+                                        <li>Optimized CI/CD pipelines in Jenkins, accelerating release cycles.</li>
+                                        <li>Managed AWS services (S3, EC2) and configured IAM roles for security.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Experience Item 3 -->
+                    <div class="relative reveal">
+                        <div class="md:flex items-center justify-between w-full">
+                            <div class="hidden md:block w-5/12 text-right pr-8">
+                                <h3 class="text-2xl font-bold text-green-400">Full Stack Trainee</h3>
+                                <p class="text-slate-400 mt-1">Sep 2022 - Oct 2022</p>
+                            </div>
+                            
+                            <div class="absolute left-[-37px] md:left-1/2 md:-ml-3 w-6 h-6 rounded-full bg-bg border-4 border-green-500 z-10 shadow-[0_0_15px_rgba(34,197,94,0.5)]"></div>
+
+                            <div class="w-full md:w-5/12 pl-0 md:pl-8">
+                                <div class="glass p-6 rounded-xl hover:bg-slate-800/50 transition-colors">
+                                    <div class="md:hidden mb-2">
+                                        <h3 class="text-xl font-bold text-green-400">Full Stack Trainee</h3>
+                                        <p class="text-slate-400 text-sm">Sep 2022 - Oct 2022</p>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-white">Indian Tech Keys</h4>
+                                    <ul class="mt-4 space-y-2 text-slate-300 text-sm list-disc pl-4">
+                                        <li>Developed responsive UI components using React.js.</li>
+                                        <li>Assisted in building Node.js backend APIs and database integration.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="py-24 bg-slate-900/30">
+            <div class="container mx-auto px-6">
+                <h2 class="section-heading text-white w-full text-center">Featured Projects</h2>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    
+                    <!-- Project Card 1 -->
+                    <div class="tilt-card h-full group">
+                        <div class="glass h-full rounded-2xl overflow-hidden border border-slate-700/50 group-hover:border-sky-500/50 transition-all duration-300 flex flex-col relative">
+                            <!-- Gradient Overlay on Hover -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 z-0"></div>
+                            
+                            <div class="p-6 relative z-10 flex flex-col h-full">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="p-3 bg-slate-800 rounded-lg text-yellow-400">
+                                        <i data-lucide="message-square"></i>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <a href="#" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-colors" title="View Code"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                        <a href="#" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-colors" title="Live Demo"><i data-lucide="external-link" class="w-5 h-5"></i></a>
+                                    </div>
+                                </div>
+                                
+                                <h3 class="text-xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">Chatbot Application</h3>
+                                <p class="text-slate-400 text-sm mb-6 flex-grow">
+                                    Interactive chatbot featuring a modern UI and robust Python (Flask) backend with Oracle SQL integration for real-time data retrieval.
+                                </p>
+                                
+                                <div class="flex flex-wrap gap-2 mt-auto">
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">Python</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">Flask</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">Oracle SQL</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 2 -->
+                    <div class="tilt-card h-full group">
+                        <div class="glass h-full rounded-2xl overflow-hidden border border-slate-700/50 group-hover:border-cyan-500/50 transition-all duration-300 flex flex-col relative">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 z-0"></div>
+                            <div class="p-6 relative z-10 flex flex-col h-full">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="p-3 bg-slate-800 rounded-lg text-cyan-400">
+                                        <i data-lucide="lock"></i>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <a href="#" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                    </div>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors">Password Manager</h3>
+                                <p class="text-slate-400 text-sm mb-6 flex-grow">
+                                    Secure, responsive password manager utilizing encryption algorithms with user authentication and safe credential storage.
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-auto">
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">React</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">Node.js</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">MongoDB</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 3 -->
+                    <div class="tilt-card h-full group">
+                        <div class="glass h-full rounded-2xl overflow-hidden border border-slate-700/50 group-hover:border-pink-500/50 transition-all duration-300 flex flex-col relative">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 z-0"></div>
+                            <div class="p-6 relative z-10 flex flex-col h-full">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="p-3 bg-slate-800 rounded-lg text-pink-400">
+                                        <i data-lucide="bar-chart-2"></i>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <a href="#" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                    </div>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">Sentiment Analysis</h3>
+                                <p class="text-slate-400 text-sm mb-6 flex-grow">
+                                    Streamlit app for Twitter sentiment analysis using Logistic Regression. Features interactive data visualizations.
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-auto">
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">Python</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">Scikit-learn</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">Streamlit</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Project Card 4 -->
+                    <div class="tilt-card h-full group">
+                        <div class="glass h-full rounded-2xl overflow-hidden border border-slate-700/50 group-hover:border-green-500/50 transition-all duration-300 flex flex-col relative">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 z-0"></div>
+                            <div class="p-6 relative z-10 flex flex-col h-full">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="p-3 bg-slate-800 rounded-lg text-green-400">
+                                        <i data-lucide="video"></i>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <a href="#" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                    </div>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-2 group-hover:text-green-400 transition-colors">Speed Detection System</h3>
+                                <p class="text-slate-400 text-sm mb-6 flex-grow">
+                                    Computer vision system utilizing Machine Learning to calculate vehicle speeds in real-time from video feeds.
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-auto">
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">OpenCV</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">ML</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">Python</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Card 5 -->
+                    <div class="tilt-card h-full group">
+                        <div class="glass h-full rounded-2xl overflow-hidden border border-slate-700/50 group-hover:border-blue-500/50 transition-all duration-300 flex flex-col relative">
+                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent opacity-60 z-0"></div>
+                            <div class="p-6 relative z-10 flex flex-col h-full">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="p-3 bg-slate-800 rounded-lg text-blue-400">
+                                        <i data-lucide="edit-3"></i>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <a href="#" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                                    </div>
+                                </div>
+                                <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">Air Canvas</h3>
+                                <p class="text-slate-400 text-sm mb-6 flex-grow">
+                                    Interactive application allowing users to draw in mid-air using hand gestures, tracked via MediaPipe.
+                                </p>
+                                <div class="flex flex-wrap gap-2 mt-auto">
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">OpenCV</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">MediaPipe</span>
+                                    <span class="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300">Python</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-24 relative">
+            <div class="container mx-auto px-6">
+                <div class="glass rounded-3xl p-8 md:p-16 text-center max-w-4xl mx-auto border border-slate-700/50 shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-sky-500 via-purple-500 to-pink-500"></div>
+                    
+                    <h2 class="text-3xl md:text-5xl font-bold font-heading text-white mb-6">Let's Work Together</h2>
+                    <p class="text-slate-400 text-lg mb-10 max-w-2xl mx-auto">
+                        I'm currently looking for new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!
+                    </p>
+                    
+                    <a href="mailto:punithsingh18@gmail.com" class="inline-flex items-center gap-2 px-8 py-4 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-full transition-all transform hover:scale-105 shadow-lg shadow-sky-500/25">
+                        <i data-lucide="send"></i>
+                        Say Hello
+                    </a>
+
+                    <div class="mt-12 pt-8 border-t border-slate-700/50 flex justify-center gap-8">
+                        <a href="#" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                            <span class="hidden sm:inline">LinkedIn</span>
+                        </a>
+                        <a href="#" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+                            <i data-lucide="github" class="w-5 h-5"></i>
+                            <span class="hidden sm:inline">GitHub</span>
+                        </a>
+                        <a href="#" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                            <span class="hidden sm:inline">Twitter</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black/80 py-8 border-t border-slate-800">
+        <div class="container mx-auto px-6 text-center text-slate-500 text-sm">
+            <p>&copy; <span id="year"></span> Punith H Singh. Built with TailwindCSS.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. Icons Initialization ---
+        lucide.createIcons();
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // --- 2. Mobile Menu Logic ---
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('flex');
+        });
+
+        // Close mobile menu on link click
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('flex');
+            });
+        });
+
+        // --- 3. Enhanced Starfield Animation ---
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let stars = [];
+
+        // Resize handler
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Star generation
+        for (let i = 0; i < 200; i++) {
+            stars.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                size: Math.random() * 2,
+                speed: Math.random() * 0.5 + 0.1, // Parallax speed
+                opacity: Math.random(),
+                pulse: Math.random() * 0.02
+            });
+        }
+
+        function animateStars() {
+            ctx.clearRect(0, 0, width, height);
+            
+            stars.forEach(star => {
+                // Update position
+                star.y -= star.speed;
+                if (star.y < 0) star.y = height;
+
+                // Update Twinkle
+                star.opacity += star.pulse;
+                if (star.opacity > 1 || star.opacity < 0.2) star.pulse = -star.pulse;
+
+                // Draw
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animateStars);
+        }
+        animateStars();
+
+        // --- 4. Typewriter Effect ---
+        const textElement = document.getElementById('typewriter');
+        const phrases = ["Software Developer", "Cloud Enthusiast", "Operations Analyst", "Tech Explorer"];
+        let phraseIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        let typeSpeed = 100;
+
+        function type() {
+            const currentPhrase = phrases[phraseIndex];
+            
+            if (isDeleting) {
+                textElement.textContent = currentPhrase.substring(0, charIndex - 1);
+                charIndex--;
+                typeSpeed = 50;
+            } else {
+                textElement.textContent = currentPhrase.substring(0, charIndex + 1);
+                charIndex++;
+                typeSpeed = 100;
+            }
+
+            if (!isDeleting && charIndex === currentPhrase.length) {
+                isDeleting = true;
+                typeSpeed = 2000; // Pause at end
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                phraseIndex = (phraseIndex + 1) % phrases.length;
+                typeSpeed = 500;
+            }
+
+            setTimeout(type, typeSpeed);
+        }
+        type();
+
+        // --- 5. Scroll Animations (Intersection Observer) ---
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target); // Only animate once
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // --- 6. Active Navigation Link on Scroll ---
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Navbar blur effect on scroll
+            const nav = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                nav.classList.add('shadow-lg');
+            } else {
+                nav.classList.remove('shadow-lg');
+            }
+        });
+
+        // --- 7. Optimized 3D Tilt Effect ---
+        const cards = document.querySelectorAll('.tilt-card');
+        
+        cards.forEach(card => {
+            card.addEventListener('mousemove', handleMouseMove);
+            card.addEventListener('mouseleave', handleMouseLeave);
+        });
+
+        function handleMouseMove(e) {
+            const card = e.currentTarget;
+            const content = card.querySelector('.glass');
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((y - centerY) / centerY) * -10; // Max 10 deg
+            const rotateY = ((x - centerX) / centerX) * 10;
+
+            // Use requestAnimationFrame for smoother performance
+            requestAnimationFrame(() => {
+                content.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+        }
+
+        function handleMouseLeave(e) {
+            const card = e.currentTarget;
+            const content = card.querySelector('.glass');
+            
+            requestAnimationFrame(() => {
+                content.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+            });
+        }
+    </script>
+</body>
+</html>
