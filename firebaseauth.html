@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punith H Singh | Senior Engineer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CONFIGURATION START ---
+        const YOUR_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAQwkA1Y5ehI9hbPiccmofA4oXlgheK1JM",
+            authDomain: "punith-portfolio.firebaseapp.com",
+            projectId: "punith-portfolio",
+            storageBucket: "punith-portfolio.firebasestorage.app",
+            messagingSenderId: "7568689097",
+            appId: "1:7568689097:web:fbdfd5f9534410b06f4a18",
+            measurementId: "G-3NTP1V4YK0"
+        };
+        // --- CONFIGURATION END ---
+
+        // Logic to choose between Preview Environment (automatic) or Production (your keys)
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config); // Use Preview keys
+        } else {
+            firebaseConfig = YOUR_FIREBASE_CONFIG; // Use Production keys
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Use a static ID for production if __app_id is missing
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'portfolio-db';
+
+        // --- Auth Logic ---
+        const loginBtn = document.getElementById('admin-login-btn');
+        const logoutBtn = document.getElementById('admin-logout-btn');
+        const learningsSection = document.getElementById('learnings-section');
+        const adminControls = document.getElementById('admin-controls');
+        const navPill = document.querySelector('.nav-pill');
+
+        // Initial Auth Check
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                // Default to anonymous (Visitor Mode)
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+
+        // Handle Login (Upgrade to Google)
+        loginBtn.addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Login failed", error);
+                alert("Login failed. Check console.");
+            }
+        });
+
+        // Handle Logout
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.reload(); // Reload to reset to anonymous
+        });
+
+        // Auth State Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user && !user.isAnonymous) {
+                // User is really logged in (Admin Mode)
+                console.log("Admin Logged In:", user.uid);
+                learningsSection.classList.remove('hidden');
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                adminControls.classList.remove('hidden');
+                
+                // Add "Learnings" link to nav if not exists
+                if (!document.getElementById('nav-learnings')) {
+                    const link = document.createElement('a');
+                    link.href = "#learnings";
+                    link.id = "nav-learnings";
+                    link.className = "nav-link";
+                    link.textContent = "Learnings";
+                    navPill.appendChild(link);
+                }
+
+                // Load Data
+                loadLearnings(user.uid);
+
+            } else {
+                // User is Anonymous (Visitor Mode)
+                console.log("Visitor Mode");
+                learningsSection.classList.add('hidden');
+                loginBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                adminControls.classList.add('hidden');
+            }
+        });
+
+        // --- Firestore Logic ---
+        const learningsGrid = document.getElementById('learnings-grid');
+        const addLearningForm = document.getElementById('add-learning-form');
+        const modal = document.getElementById('learning-modal');
+        const openModalBtn = document.getElementById('open-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        // Open/Close Modal
+        openModalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+        closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+        // Add Learning
+        addLearningForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('learning-title').value;
+            const desc = document.getElementById('learning-desc').value;
+            const tags = document.getElementById('learning-tags').value.split(',').map(t => t.trim());
+            const user = auth.currentUser;
+
+            if (!user) return;
+
+            const submitBtn = addLearningForm.querySelector('button');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Saving...";
+            submitBtn.disabled = true;
+
+            try {
+                // Path: artifacts/{appId}/users/{userId}/learnings
+                await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'learnings'), {
+                    title,
+                    desc,
+                    tags,
+                    timestamp: serverTimestamp()
+                });
+                
+                addLearningForm.reset();
+                modal.classList.add('hidden');
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                alert("Error saving. See console.");
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Load Learnings (Real-time)
+        function loadLearnings(userId) {
+            // NOTE: Firestore queries in this environment must be simple (no complex orderBy/where)
+            // We fetch all and sort in memory
+            const q = collection(db, 'artifacts', appId, 'users', userId, 'learnings');
+            
+            onSnapshot(q, (snapshot) => {
+                const learnings = [];
+                snapshot.forEach((doc) => {
+                    learnings.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort by timestamp desc (newest first) in memory
+                learnings.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+                renderLearnings(learnings);
+            }, (error) => {
+                console.error("Error getting learnings:", error);
+            });
+        }
+
+        function renderLearnings(learnings) {
+            learningsGrid.innerHTML = '';
+            
+            if (learnings.length === 0) {
+                learningsGrid.innerHTML = `
+                    <div class="col-span-full text-center py-10 text-slate-500">
+                        <i data-lucide="book-open" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                        <p>No learnings recorded yet. Start adding!</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            learnings.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "spotlight-card p-6 relative group";
+                
+                const tagsHtml = item.tags && item.tags[0] !== '' 
+                    ? `<div class="flex flex-wrap gap-2 mt-4">${item.tags.map(tag => `<span class="tech-badge text-[10px]">${tag}</span>`).join('')}</div>` 
+                    : '';
+
+                card.innerHTML = `
+                    <button class="delete-btn absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/10 rounded" data-id="${item.id}">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                    <h3 class="text-xl font-bold text-white mb-2">${item.title}</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">${item.desc}</p>
+                    ${tagsHtml}
+                    <div class="mt-4 text-xs font-mono text-slate-600">
+                        ${item.timestamp ? new Date(item.timestamp.seconds * 1000).toLocaleDateString() : 'Just now'}
+                    </div>
+                `;
+                learningsGrid.appendChild(card);
+            });
+
+            // Re-initialize icons and listeners
+            lucide.createIcons();
+            
+            // Delete Listeners
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if(confirm('Delete this note?')) {
+                        const id = e.currentTarget.getAttribute('data-id');
+                        const user = auth.currentUser;
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'learnings', id));
+                    }
+                });
+            });
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #030014;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-bg: rgba(10, 10, 15, 0.6);
+            --primary: #8b5cf6; /* Violet */
+            --secondary: #3b82f6; /* Blue */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* --- 1. Background Effects --- */
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 0%, #111122 0%, #030014 60%);
+        }
+        canvas { display: block; }
+
+        /* --- 2. Spotlight Card Effect --- */
+        .spotlight-group {
+            position: relative;
+        }
+        .spotlight-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+            backdrop-filter: blur(12px);
+            /* Initial state for scroll reveal */
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        /* Class added by JS when in view */
+        .spotlight-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .spotlight-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(139, 92, 246, 0.15), transparent 40%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .spotlight-card:hover::before { opacity: 1; }
+        .spotlight-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px -10px rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        /* --- 3. Typography & Animations --- */
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 30%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: gradientMove 5s ease infinite;
+        }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0; /* for scroll reveal */
+        }
+        .section-title.visible {
+            opacity: 1;
+            transition: opacity 0.8s ease-out;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px; left: 50%; transform: translateX(-50%);
+            width: 60px; height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        /* Cursor blinking for typing effect */
+        .cursor-blink {
+            display: inline-block;
+            width: 3px;
+            background-color: var(--primary);
+            animation: blink 1s infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* --- 4. Navigation Pill --- */
+        .nav-pill {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 100px;
+            padding: 0.5rem 1.5rem;
+            position: fixed;
+            top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 50;
+            display: flex; gap: 2rem;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+        .nav-link {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #94a3b8;
+            transition: color 0.3s;
+            position: relative;
+        }
+        .nav-link:hover { color: white; }
+        .nav-link.active { color: white; }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -4px; left: 0; width: 100%; height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* --- 5. Timeline --- */
+        .timeline-line {
+            position: absolute;
+            left: 20px; top: 0; bottom: 0; width: 2px;
+            background: linear-gradient(to bottom, var(--primary), rgba(59, 130, 246, 0.5), transparent);
+        }
+        
+        /* --- 6. Tech Badge --- */
+        .tech-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 4px;
+            color: #d8b4fe;
+            transition: all 0.2s;
+            cursor: default;
+        }
+        .tech-badge:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* --- 7. Features CSS --- */
+        /* Scroll Progress */
+        .scroll-progress {
+            position: fixed; top: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 1000; width: 0%; transition: width 0.1s;
+        }
+
+        /* Back to Top */
+        .back-to-top {
+            position: fixed; bottom: 2rem; right: 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            color: white; padding: 0.8rem; border-radius: 50%;
+            z-index: 40; opacity: 0; pointer-events: none;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .back-to-top.active { opacity: 1; pointer-events: all; transform: translateY(0); }
+        .back-to-top:hover { background: var(--primary); transform: translateY(-5px); }
+
+        /* Modal */
+        .modal-overlay {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" id="scroll-progress"></div>
+
+    <!-- Background -->
+    <div id="canvas-container"><canvas id="starfield"></canvas></div>
+
+    <!-- Navigation -->
+    <nav class="nav-pill hidden md:flex">
+        <a href="#home" class="nav-link active">Home</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#skills" class="nav-link">Skills</a>
+        <a href="#experience" class="nav-link">Experience</a>
+        <a href="#projects" class="nav-link">Projects</a>
+        <a href="#contact" class="nav-link">Contact</a>
+    </nav>
+
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="md:hidden fixed top-6 right-6 z-50 p-2 bg-slate-800/80 backdrop-blur rounded-lg border border-slate-700">
+        <i data-lucide="menu" class="text-white"></i>
+    </button>
+    <div id="mobile-menu" class="fixed inset-0 bg-black/95 z-40 hidden flex-col items-center justify-center gap-8 backdrop-blur-xl transition-all">
+        <a href="#home" class="text-2xl font-bold text-white">Home</a>
+        <a href="#about" class="text-2xl font-bold text-slate-400">About</a>
+        <a href="#projects" class="text-2xl font-bold text-slate-400">Projects</a>
+        <a href="#contact" class="text-2xl font-bold text-slate-400">Contact</a>
+    </div>
+
+    <main class="max-w-6xl mx-auto px-6 relative z-10">
+
+        <!-- HERO SECTION -->
+        <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center pt-20">
+            <div class="spotlight-card px-4 py-1.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-xs font-medium mb-8">
+                <span class="w-2 h-2 inline-block rounded-full bg-green-500 mr-2 animate-pulse"></span>
+                Open to Opportunities
+            </div>
+
+            <h1 class="text-6xl md:text-8xl font-bold mb-6 tracking-tight">
+                Hi, I'm <span class="text-gradient">Punith</span>
+            </h1>
+            
+            <p class="text-xl md:text-2xl text-slate-400 max-w-2xl mb-10 leading-relaxed h-[60px] md:h-[auto]">
+                I engineer <span id="typewriter" class="text-white font-semibold"></span><span class="cursor-blink">&nbsp;</span>
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-4 animate-fade-in">
+                <a href="#projects" class="px-8 py-3 bg-white text-black font-bold rounded-lg hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                    View My Work
+                </a>
+                <a href="#contact" class="px-8 py-3 border border-slate-700 bg-slate-900/50 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors backdrop-blur-md">
+                    Contact Me
+                </a>
+            </div>
+
+            <div class="mt-16 flex gap-8 text-slate-500 animate-fade-in">
+                <a href="https://github.com/Punith-Singh" target="_blank" class="hover:text-white hover:-translate-y-1 transition-all"><i data-lucide="github" class="w-7 h-7"></i></a>
+                <a href="https://linkedin.com/in/punith-h-singh" target="_blank" class="hover:text-white hover:-translate-y-1 transition-all"><i data-lucide="linkedin" class="w-7 h-7"></i></a>
+                <a href="mailto:punithsingh18@gmail.com" class="hover:text-white hover:-translate-y-1 transition-all"><i data-lucide="mail" class="w-7 h-7"></i></a>
+            </div>
+            
+            <div class="absolute bottom-10 animate-bounce opacity-50">
+                <i data-lucide="chevron-down" class="text-slate-400"></i>
+            </div>
+        </section>
+
+        <!-- LEARNINGS SECTION (PRIVATE) -->
+        <section id="learnings-section" class="py-24 hidden border-t border-slate-800 border-dashed">
+            <div class="flex justify-between items-end mb-12">
+                <h2 class="section-title !mb-0 text-left">My Knowledge Base</h2>
+                <div id="admin-controls" class="hidden">
+                    <button id="open-modal-btn" class="px-4 py-2 bg-violet-600 text-white text-sm font-bold rounded-lg hover:bg-violet-700 flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add Learning
+                    </button>
+                </div>
+            </div>
+            
+            <div id="learnings-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Content loaded dynamically from Firestore -->
+                <div class="col-span-full text-center py-10 text-slate-500">
+                    <i data-lucide="loader" class="w-8 h-8 mx-auto animate-spin"></i>
+                    <p class="mt-2">Loading your brain...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT SECTION -->
+        <section id="about" class="py-24">
+            <h2 class="section-title">About Me</h2>
+            <div class="spotlight-card p-8 md:p-12 group">
+                <div class="flex flex-col md:flex-row gap-12 items-center">
+                    <div class="relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-violet-600 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+                        <div class="relative w-48 h-48 rounded-2xl border border-slate-700 bg-slate-900 overflow-hidden">
+                             <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Punith&backgroundColor=1e293b" class="w-full h-full object-cover" alt="Avatar">
+                        </div>
+                    </div>
+                    <div class="text-lg text-slate-300 space-y-4">
+                        <p>
+                            I’m a Computer Science Engineer passionate about building scalable, real-world solutions. My expertise spans <strong class="text-white">Full Stack Development, Cloud Infrastructure, and AI Integration</strong>.
+                        </p>
+                        <p>
+                            Currently optimizing operations at <strong class="text-violet-400">CRED</strong>, I thrive on solving complex problems. I don't just write code; I build reliable systems that drive business value.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SKILLS SECTION -->
+        <section id="skills" class="py-24">
+            <h2 class="section-title">Technical Expertise</h2>
+            <div class="grid md:grid-cols-3 gap-6 spotlight-group">
+                <!-- Category 1 -->
+                <div class="spotlight-card p-6 flex flex-col items-start">
+                    <div class="p-3 bg-blue-500/10 rounded-lg mb-4 border border-blue-500/20">
+                        <i data-lucide="code-2" class="text-blue-400 w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-white">Languages</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="tech-badge">Python</span>
+                        <span class="tech-badge">JavaScript</span>
+                        <span class="tech-badge">Java</span>
+                        <span class="tech-badge">SQL</span>
+                        <span class="tech-badge">C++</span>
+                    </div>
+                </div>
+                <!-- Category 2 -->
+                <div class="spotlight-card p-6 flex flex-col items-start">
+                    <div class="p-3 bg-violet-500/10 rounded-lg mb-4 border border-violet-500/20">
+                        <i data-lucide="globe" class="text-violet-400 w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-white">Web & Mobile</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="tech-badge">React.js</span>
+                        <span class="tech-badge">Node.js</span>
+                        <span class="tech-badge">Flutter</span>
+                        <span class="tech-badge">HTML5/CSS3</span>
+                        <span class="tech-badge">Tailwind</span>
+                    </div>
+                </div>
+                <!-- Category 3 -->
+                <div class="spotlight-card p-6 flex flex-col items-start">
+                    <div class="p-3 bg-emerald-500/10 rounded-lg mb-4 border border-emerald-500/20">
+                        <i data-lucide="server" class="text-emerald-400 w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4 text-white">Cloud & DevOps</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="tech-badge">AWS</span>
+                        <span class="tech-badge">Docker</span>
+                        <span class="tech-badge">Kubernetes</span>
+                        <span class="tech-badge">Jenkins</span>
+                        <span class="tech-badge">Git</span>
+                        <span class="tech-badge">MongoDB</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIENCE SECTION -->
+        <section id="experience" class="py-24">
+            <h2 class="section-title">Journey</h2>
+            <div class="max-w-3xl mx-auto relative pl-8 border-l border-slate-800">
+                <div class="timeline-line"></div>
+                <!-- Exp 1 -->
+                <div class="mb-12 relative pl-8 group">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4 border-[#030014] bg-violet-500 group-hover:scale-125 transition-transform shadow-[0_0_15px_rgba(139,92,246,0.6)]"></div>
+                    <div class="spotlight-card p-8 group-hover:border-violet-500/30 transition-colors">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-2xl font-bold text-white">Operations Analyst Consultant</h3>
+                            <span class="text-xs font-mono text-violet-300 bg-violet-500/10 px-2 py-1 rounded border border-violet-500/20">Feb 2025 - Present</span>
+                        </div>
+                        <div class="text-lg text-slate-400 mb-4 font-medium">CRED (Dreamplug Technologies)</div>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Analysing high-volume transactional data to improve system efficiency. Optimising business operational workflows ensuring 99.9% reliability.
+                        </p>
+                    </div>
+                </div>
+                <!-- Exp 2 -->
+                <div class="mb-12 relative pl-8 group">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4 border-[#030014] bg-blue-500 group-hover:scale-125 transition-transform shadow-[0_0_15px_rgba(59,130,246,0.6)]"></div>
+                    <div class="spotlight-card p-8 group-hover:border-blue-500/30 transition-colors">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-2xl font-bold text-white">AI-DevOps Engineer Intern</h3>
+                            <span class="text-xs font-mono text-blue-300 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">Sep 2024 - Feb 2025</span>
+                        </div>
+                        <div class="text-lg text-slate-400 mb-4 font-medium">Rooman Technologies</div>
+                        <ul class="list-disc list-inside text-slate-400 text-sm space-y-2">
+                            <li>Orchestrated CI/CD pipelines using Jenkins and Docker.</li>
+                            <li>Deployed scalable AI models on AWS infrastructure.</li>
+                            <li>Managed S3 buckets and IAM roles for secure data handling.</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Exp 3 -->
+                <div class="relative pl-8 group">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4 border-[#030014] bg-emerald-500 group-hover:scale-125 transition-transform shadow-[0_0_15px_rgba(16,185,129,0.6)]"></div>
+                    <div class="spotlight-card p-8 group-hover:border-emerald-500/30 transition-colors">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-2xl font-bold text-white">Full Stack Trainee</h3>
+                            <span class="text-xs font-mono text-emerald-300 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">Sep 2022 - Oct 2022</span>
+                        </div>
+                        <div class="text-lg text-slate-400 mb-4 font-medium">Indian Tech Keys</div>
+                        <p class="text-slate-400 text-sm leading-relaxed">
+                            Developed responsive UI components using React.js and integrated Node.js backend APIs for seamless data flow.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EDUCATION SECTION -->
+        <section id="education" class="py-12">
+            <h2 class="section-title">Education</h2>
+            <div class="max-w-3xl mx-auto relative pl-8 border-l border-slate-800">
+                <div class="timeline-line"></div>
+                <div class="relative pl-8 group">
+                    <div class="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4 border-[#030014] bg-pink-500 group-hover:scale-125 transition-transform shadow-[0_0_15px_rgba(236,72,153,0.6)]"></div>
+                    <div class="spotlight-card p-8 group-hover:border-pink-500/30 transition-colors">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                            <h3 class="text-2xl font-bold text-white">Bachelor of Engineering (CSE)</h3>
+                            <span class="text-xs font-mono text-pink-300 bg-pink-500/10 px-2 py-1 rounded border border-pink-500/20">2019 - 2023</span>
+                        </div>
+                        <div class="text-lg text-slate-400 mb-2 font-medium">Visvesvaraya Technological University</div>
+                        <p class="text-slate-400 text-sm">Specialized in Cloud Computing and Data Structures.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECTS SECTION -->
+        <section id="projects" class="py-24">
+            <h2 class="section-title">Featured Projects</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 spotlight-group">
+                <!-- Project 1 -->
+                <div class="spotlight-card flex flex-col h-full group">
+                    <div class="h-48 bg-gradient-to-br from-slate-900 to-black relative overflow-hidden border-b border-white/5">
+                        <div class="absolute inset-0 bg-violet-600/5 group-hover:bg-violet-600/10 transition-colors"></div>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform group-hover:scale-110">
+                             <i data-lucide="message-square" class="w-16 h-16 text-violet-500/50"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 font-mono text-xs text-violet-400 bg-violet-500/10 px-2 py-1 rounded border border-violet-500/20">AI / SQL</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-violet-400 transition-colors">Enterprise Chatbot</h3>
+                        <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Interactive chatbot with Flask backend and Oracle SQL integration for dynamic data retrieval.</p>
+                        <div class="flex flex-wrap gap-2 mt-auto">
+                            <span class="tech-badge">Python</span>
+                            <span class="tech-badge">Flask</span>
+                            <span class="tech-badge">SQL</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Project 2 -->
+                <div class="spotlight-card flex flex-col h-full group">
+                    <div class="h-48 bg-gradient-to-br from-slate-900 to-black relative overflow-hidden border-b border-white/5">
+                         <div class="absolute inset-0 bg-emerald-600/5 group-hover:bg-emerald-600/10 transition-colors"></div>
+                         <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform group-hover:scale-110">
+                             <i data-lucide="shield" class="w-16 h-16 text-emerald-500/50"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 font-mono text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">SECURITY</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">Secure Vault</h3>
+                        <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Secure password manager with user authentication and encryption using MERN stack.</p>
+                        <div class="flex flex-wrap gap-2 mt-auto">
+                            <span class="tech-badge">React</span>
+                            <span class="tech-badge">Node</span>
+                            <span class="tech-badge">Mongo</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Project 3 -->
+                <div class="spotlight-card flex flex-col h-full group">
+                    <div class="h-48 bg-gradient-to-br from-slate-900 to-black relative overflow-hidden border-b border-white/5">
+                         <div class="absolute inset-0 bg-blue-600/5 group-hover:bg-blue-600/10 transition-colors"></div>
+                         <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform group-hover:scale-110">
+                             <i data-lucide="scan-eye" class="w-16 h-16 text-blue-500/50"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 font-mono text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">CV / AI</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">Air Canvas</h3>
+                        <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Touchless drawing application using OpenCV and MediaPipe for hand gesture tracking.</p>
+                        <div class="flex flex-wrap gap-2 mt-auto">
+                            <span class="tech-badge">Python</span>
+                            <span class="tech-badge">OpenCV</span>
+                            <span class="tech-badge">AI</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Project 4 -->
+                <div class="spotlight-card flex flex-col h-full group">
+                    <div class="h-48 bg-gradient-to-br from-slate-900 to-black relative overflow-hidden border-b border-white/5">
+                         <div class="absolute inset-0 bg-pink-600/5 group-hover:bg-pink-600/10 transition-colors"></div>
+                         <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform group-hover:scale-110">
+                             <i data-lucide="bar-chart-2" class="w-16 h-16 text-pink-500/50"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 font-mono text-xs text-pink-400 bg-pink-500/10 px-2 py-1 rounded border border-pink-500/20">DATA SCIENCE</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">Sentiment Engine</h3>
+                        <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Twitter sentiment analysis using Logistic Regression and Streamlit visualizations.</p>
+                        <div class="flex flex-wrap gap-2 mt-auto">
+                            <span class="tech-badge">Python</span>
+                            <span class="tech-badge">ML</span>
+                            <span class="tech-badge">Streamlit</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Project 5 -->
+                <div class="spotlight-card flex flex-col h-full group">
+                    <div class="h-48 bg-gradient-to-br from-slate-900 to-black relative overflow-hidden border-b border-white/5">
+                         <div class="absolute inset-0 bg-orange-600/5 group-hover:bg-orange-600/10 transition-colors"></div>
+                         <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform group-hover:scale-110">
+                             <i data-lucide="video" class="w-16 h-16 text-orange-500/50"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 font-mono text-xs text-orange-400 bg-orange-500/10 px-2 py-1 rounded border border-orange-500/20">COMPUTER VISION</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-orange-400 transition-colors">Speed Detect</h3>
+                        <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Real-time vehicle speed estimation system using video processing algorithms.</p>
+                        <div class="flex flex-wrap gap-2 mt-auto">
+                            <span class="tech-badge">OpenCV</span>
+                            <span class="tech-badge">Python</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Project 6 -->
+                <div class="spotlight-card flex flex-col h-full group">
+                    <div class="h-48 bg-gradient-to-br from-slate-900 to-black relative overflow-hidden border-b border-white/5">
+                         <div class="absolute inset-0 bg-red-600/5 group-hover:bg-red-600/10 transition-colors"></div>
+                         <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform group-hover:scale-110">
+                             <i data-lucide="train" class="w-16 h-16 text-red-500/50"></i>
+                        </div>
+                        <div class="absolute bottom-4 left-4 font-mono text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">BACKEND</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-red-400 transition-colors">Train Manager</h3>
+                        <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Railway reservation system with ticket booking management via Oracle DB.</p>
+                        <div class="flex flex-wrap gap-2 mt-auto">
+                            <span class="tech-badge">Flask</span>
+                            <span class="tech-badge">Oracle</span>
+                            <span class="tech-badge">Python</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="py-24">
+            <div class="spotlight-card p-10 md:p-16 text-center max-w-4xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">Let's Build Something Amazing</h2>
+                <p class="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+                    I'm currently open to new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!
+                </p>
+                <a href="mailto:punithsingh18@gmail.com" class="inline-block px-10 py-4 bg-gradient-to-r from-violet-600 to-blue-600 text-white font-bold rounded-xl hover:scale-105 transition-transform shadow-[0_0_30px_rgba(139,92,246,0.3)]">
+                    Say Hello
+                </a>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="border-t border-slate-800 py-12 text-center text-slate-500 text-sm bg-black/50">
+            <div class="flex justify-center gap-6 mb-4">
+                 <a href="https://github.com/Punith-Singh" class="hover:text-white transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                 <a href="https://linkedin.com/in/punith-h-singh" class="hover:text-white transition-colors"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                 <a href="mailto:punithsingh18@gmail.com" class="hover:text-white transition-colors"><i data-lucide="mail" class="w-5 h-5"></i></a>
+            </div>
+            <div class="flex justify-center items-center gap-4">
+                <p>&copy; 2026 Punith H Singh. All rights reserved.</p>
+                <button id="admin-login-btn" class="text-slate-700 hover:text-slate-500 transition-colors p-1" title="Private Access">
+                    <i data-lucide="lock" class="w-3 h-3"></i>
+                </button>
+                <button id="admin-logout-btn" class="text-red-700 hover:text-red-500 transition-colors p-1 hidden" title="Logout">
+                    <i data-lucide="log-out" class="w-3 h-3"></i>
+                </button>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Back To Top Button -->
+    <a href="#home" class="back-to-top" id="back-to-top"><i data-lucide="arrow-up" class="w-6 h-6"></i></a>
+
+    <!-- Add Learning Modal -->
+    <div id="learning-modal" class="fixed inset-0 z-[100] modal-overlay hidden flex items-center justify-center p-4">
+        <div class="spotlight-card bg-[#0a0a0f] max-w-lg w-full p-8 relative">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-500 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-white mb-6">Add Learning</h3>
+            <form id="add-learning-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Title</label>
+                    <input type="text" id="learning-title" class="w-full bg-black/50 border border-slate-700 rounded p-2 text-white focus:border-violet-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Description/Notes</label>
+                    <textarea id="learning-desc" rows="4" class="w-full bg-black/50 border border-slate-700 rounded p-2 text-white focus:border-violet-500 outline-none" required></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Tags (comma separated)</label>
+                    <input type="text" id="learning-tags" placeholder="React, AWS, etc." class="w-full bg-black/50 border border-slate-700 rounded p-2 text-white focus:border-violet-500 outline-none">
+                </div>
+                <button type="submit" class="w-full py-2 bg-violet-600 text-white font-bold rounded hover:bg-violet-700 transition-colors">
+                    Save to My Learnings
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- 1. Starfield Background (Interactive) ---
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height, stars = [], meteors = [];
+        let mouse = { x: -1000, y: -1000 };
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            stars = [];
+            for (let i = 0; i < 200; i++) {
+                stars.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    baseX: 0,
+                    baseY: 0,
+                    size: Math.random() * 2,
+                    opacity: Math.random(),
+                    speed: Math.random() * 0.2
+                });
+                stars[i].baseX = stars[i].x;
+                stars[i].baseY = stars[i].y;
+            }
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        function createMeteor() {
+            if (meteors.length < 2 && Math.random() < 0.01) { 
+                meteors.push({
+                    x: Math.random() * width,
+                    y: 0,
+                    size: Math.random() * 2 + 1,
+                    speedX: Math.random() * 2 - 1, 
+                    speedY: Math.random() * 10 + 5,
+                    life: 100
+                });
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw Stars
+            ctx.fillStyle = "white";
+            stars.forEach(star => {
+                // Interactive movement
+                let dx = mouse.x - star.x;
+                let dy = mouse.y - star.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 100) {
+                    let force = (100 - distance) / 100;
+                    let angle = Math.atan2(dy, dx);
+                    star.x -= Math.cos(angle) * force * 2;
+                    star.y -= Math.sin(angle) * force * 2;
+                } else {
+                    // Return to base position roughly
+                   // Simple drift instead
+                }
+
+                ctx.globalAlpha = star.opacity;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw Meteors
+            createMeteor();
+            meteors.forEach((m, i) => {
+                ctx.globalAlpha = m.life / 100;
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.lineWidth = m.size;
+                ctx.beginPath();
+                ctx.moveTo(m.x, m.y);
+                ctx.lineTo(m.x - m.speedX * 5, m.y - m.speedY * 5); 
+                ctx.stroke();
+
+                m.x += m.speedX;
+                m.y += m.speedY;
+                m.life -= 2;
+
+                if (m.life <= 0 || m.y > height) {
+                    meteors.splice(i, 1);
+                }
+            });
+
+            requestAnimationFrame(animateCanvas);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        animateCanvas();
+
+        // --- 2. Spotlight & Reveal Effect ---
+        const cards = document.querySelectorAll('.spotlight-card');
+        const sections = document.querySelectorAll('.section-title');
+        
+        // Mouse Move for Spotlight
+        document.addEventListener('mousemove', (e) => {
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+
+        // Scroll Observer for Revelations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cards.forEach(card => observer.observe(card));
+        sections.forEach(title => observer.observe(title));
+
+        // --- 3. Typing Effect ---
+        const typeElement = document.getElementById('typewriter');
+        const phrases = ['Scalable Backends', 'Fluid Frontends', 'Secure Cloud Systems'];
+        let phraseIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        
+        function type() {
+            const currentPhrase = phrases[phraseIndex];
+            
+            if (isDeleting) {
+                typeElement.textContent = currentPhrase.substring(0, charIndex - 1);
+                charIndex--;
+            } else {
+                typeElement.textContent = currentPhrase.substring(0, charIndex + 1);
+                charIndex++;
+            }
+
+            let typeSpeed = isDeleting ? 50 : 100;
+
+            if (!isDeleting && charIndex === currentPhrase.length) {
+                typeSpeed = 2000; // Pause at end
+                isDeleting = true;
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                phraseIndex = (phraseIndex + 1) % phrases.length;
+                typeSpeed = 500;
+            }
+
+            setTimeout(type, typeSpeed);
+        }
+        type();
+
+        // --- 4. Mobile Menu ---
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+        });
+        
+        menu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            });
+        });
+
+        // --- 5. Nav Pill Active State & Scroll Features ---
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sectionEls = document.querySelectorAll('section');
+        const progressBar = document.getElementById('scroll-progress');
+        const backToTopBtn = document.getElementById('back-to-top');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            const scrollY = window.scrollY;
+            
+            // Scroll Progress
+            const winHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (scrollY / winHeight) * 100;
+            progressBar.style.width = scrolled + "%";
+
+            // Back to Top Visibility
+            if (scrollY > 500) {
+                backToTopBtn.classList.add('active');
+            } else {
+                backToTopBtn.classList.remove('active');
+            }
+
+            // Nav Active State
+            sectionEls.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
