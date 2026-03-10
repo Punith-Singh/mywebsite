@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punith H Singh - Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Tailwind Config for Custom Colors/Fonts -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        display: ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    colors: {
+                        space: {
+                            900: '#030014',
+                            800: '#0A0A2A',
+                            700: '#11113A'
+                        },
+                        accent: {
+                            cyan: '#00F0FF',
+                            purple: '#8A2BE2',
+                            blue: '#4D4DFF'
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'spin-slow': 'spin 15s linear infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Firebase SDKs (Unchanged Logic) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const USER_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAQwkA1Y5ehI9hbPiccmofA4oXlgheK1JM",
+            authDomain: "punith-portfolio.firebaseapp.com",
+            projectId: "punith-portfolio",
+            storageBucket: "punith-portfolio.firebasestorage.app",
+            messagingSenderId: "7568689097",
+            appId: "1:7568689097:web:fbdfd5f9534410b06f4a18",
+            measurementId: "G-3NTP1V4YK0"
+        };
+
+        let firebaseConfig;
+        let isPreviewEnv = false;
+
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+            isPreviewEnv = true;
+        } else {
+            firebaseConfig = USER_FIREBASE_CONFIG;
+            isPreviewEnv = false;
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'portfolio-db';
+
+        const initAuth = async () => {
+            if (isPreviewEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch (e) {
+                    console.warn("Preview token failed, falling back to anonymous:", e);
+                    await signInAnonymously(auth);
+                }
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+
+        const loginBtn = document.getElementById('admin-login-btn');
+        const logoutBtn = document.getElementById('admin-logout-btn');
+        const learningsSection = document.getElementById('learnings-section');
+        const adminControls = document.getElementById('admin-controls');
+
+        if(loginBtn) {
+            loginBtn.addEventListener('click', async () => {
+                const provider = new GoogleAuthProvider();
+                try {
+                    await signInWithPopup(auth, provider);
+                } catch (error) {
+                    console.error("Login failed", error);
+                }
+            });
+        }
+
+        if(logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await signOut(auth);
+                window.location.reload(); 
+            });
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user && !user.isAnonymous) {
+                learningsSection?.classList.remove('hidden');
+                loginBtn?.classList.add('hidden');
+                logoutBtn?.classList.remove('hidden');
+                adminControls?.classList.remove('hidden');
+                loadLearnings(user.uid);
+            } else {
+                learningsSection?.classList.add('hidden');
+                loginBtn?.classList.remove('hidden');
+                logoutBtn?.classList.add('hidden');
+                adminControls?.classList.add('hidden');
+            }
+        });
+
+        const learningsGrid = document.getElementById('learnings-grid');
+        const addLearningForm = document.getElementById('add-learning-form');
+        const modal = document.getElementById('learning-modal');
+        const openModalBtn = document.getElementById('open-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        openModalBtn?.addEventListener('click', () => modal.classList.remove('hidden'));
+        closeModalBtn?.addEventListener('click', () => modal.classList.add('hidden'));
+
+        addLearningForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('learning-title').value;
+            const desc = document.getElementById('learning-desc').value;
+            const tags = document.getElementById('learning-tags').value.split(',').map(t => t.trim());
+            const user = auth.currentUser;
+
+            if (!user) return;
+
+            const submitBtn = addLearningForm.querySelector('button');
+            submitBtn.innerText = "Saving...";
+            submitBtn.disabled = true;
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'learnings'), {
+                    title, desc, tags, timestamp: serverTimestamp()
+                });
+                addLearningForm.reset();
+                modal.classList.add('hidden');
+            } catch (error) {
+                console.error("Error adding:", error);
+            } finally {
+                submitBtn.innerText = "Save to Knowledge Base";
+                submitBtn.disabled = false;
+            }
+        });
+
+        function loadLearnings(userId) {
+            const q = collection(db, 'artifacts', appId, 'users', userId, 'learnings');
+            onSnapshot(q, (snapshot) => {
+                const learnings = [];
+                snapshot.forEach((doc) => learnings.push({ id: doc.id, ...doc.data() }));
+                learnings.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                renderLearnings(learnings);
+            }, (error) => {
+                console.log("Error loading learnings:", error);
+            });
+        }
+
+        function renderLearnings(learnings) {
+            if(!learningsGrid) return;
+            learningsGrid.innerHTML = '';
+            if (learnings.length === 0) {
+                learningsGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-8">No learnings yet. Add one!</div>`;
+                return;
+            }
+
+            learnings.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "glass-panel p-6 relative group h-full flex flex-col";
+                
+                const tagsHtml = item.tags && item.tags[0] !== '' 
+                    ? `<div class="flex flex-wrap gap-2 mt-auto pt-4">${item.tags.map(tag => `<span class="px-2 py-1 text-[10px] uppercase tracking-wider font-bold bg-white/5 border border-white/10 rounded-md text-accent-cyan">${tag}</span>`).join('')}</div>` 
+                    : '';
+
+                card.innerHTML = `
+                    <button class="delete-btn absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/20 rounded-full z-20" data-id="${item.id}" title="Delete">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                    <h3 class="text-xl font-display font-bold text-white mb-2 pr-8">${item.title}</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4 whitespace-pre-wrap">${item.desc}</p>
+                    ${tagsHtml}
+                    <div class="mt-4 pt-4 border-t border-white/5 text-xs text-slate-500 font-mono">
+                        ${item.timestamp ? new Date(item.timestamp.seconds * 1000).toLocaleDateString() : ''}
+                    </div>
+                `;
+                learningsGrid.appendChild(card);
+            });
+            lucide.createIcons();
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if(confirm('Delete this entry?')) {
+                        const id = e.currentTarget.getAttribute('data-id');
+                        const user = auth.currentUser;
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'learnings', id));
+                    }
+                });
+            });
+        }
+    </script>
+
+    <style>
+        ::selection {
+            background: rgba(0, 240, 255, 0.2);
+            color: #fff;
+        }
+        
+        body {
+            background-color: #030014;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030014;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e1e3f;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4D4DFF;
+        }
+
+        /* Ambient Backgrounds */
+        #aurora-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;
+        }
+        .aurora {
+            position: absolute; border-radius: 50%; filter: blur(150px); opacity: 0.4; mix-blend-mode: screen; transition: all 0.3s ease-out;
+        }
+        #aurora-1 {
+            width: 60vw; height: 60vw; background: radial-gradient(circle, rgba(77, 77, 255, 0.15) 0%, transparent 70%);
+        }
+        canvas#starfield {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; opacity: 0.8;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(10, 10, 42, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            border-radius: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+        .glass-panel::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
+            transform: skewX(-20deg); transition: 0.7s; pointer-events: none;
+        }
+        .glass-panel:hover::before { left: 150%; }
+        .glass-panel:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 240, 255, 0.3);
+            box-shadow: 0 10px 40px -10px rgba(0, 240, 255, 0.2);
+        }
+
+        /* 3D Card Interactivity */
+        .card-3d-wrap { perspective: 1200px; transform-style: preserve-3d; }
+        .card-3d-inner {
+            transition: transform 0.1s ease-out; transform-style: preserve-3d; height: 100%;
+        }
+
+        /* Typography & Gradients */
+        .section-title {
+            @apply text-4xl md:text-6xl font-display font-bold text-center mb-16 flex items-center justify-center gap-x-4;
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .text-gradient-accent {
+            background: linear-gradient(to right, #00F0FF, #4D4DFF, #8A2BE2);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-size: 200% auto; animation: text-shine 5s linear infinite;
+        }
+        @keyframes text-shine { to { background-position: 200% center; } }
+
+        /* Fancy Buttons */
+        .btn-glow {
+            position: relative; padding: 0.75rem 2rem; border-radius: 999px;
+            font-weight: 600; color: white; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);
+            overflow: hidden; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn-glow::after {
+            content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px;
+            background: linear-gradient(45deg, #00F0FF, #4D4DFF, #8A2BE2);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .btn-glow:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(77, 77, 255, 0.4); }
+        .btn-glow:hover::after { opacity: 1; }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4D4DFF 0%, #8A2BE2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5), 0 0 40px rgba(77, 77, 255, 0.3);
+        }
+
+        /* Nav links */
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+            background: #00F0FF; transition: width 0.3s ease; border-radius: 2px; box-shadow: 0 0 10px #00F0FF;
+        }
+        .nav-link:hover::after, .nav-link.nav-active::after { width: 100%; }
+        .nav-link.nav-active { color: #fff; text-shadow: 0 0 15px rgba(0,240,255,0.5); }
+
+        /* Scroll Animations */
+        .scroll-reveal {
+            opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .scroll-reveal.active { opacity: 1; transform: translateY(0); }
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+
+        /* Timeline / Experience */
+        .timeline-line {
+            position: absolute; left: 11px; top: 0; bottom: 0; width: 2px;
+            background: linear-gradient(to bottom, #00F0FF, #4D4DFF, transparent);
+            opacity: 0.3;
+        }
+        .timeline-dot {
+            position: absolute; left: -26px; top: 6px; width: 14px; height: 14px;
+            border-radius: 50%; background: #030014; border: 2px solid #00F0FF;
+            box-shadow: 0 0 10px #00F0FF; transition: all 0.3s ease;
+        }
+        .timeline-item:hover .timeline-dot {
+            background: #00F0FF; transform: scale(1.3); box-shadow: 0 0 20px #00F0FF;
+        }
+
+        /* Utils */
+        .bg-mesh {
+            background-color: #030014;
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0.1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0.1) 0, transparent 50%);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-accent-cyan/30 text-base md:text-lg">
+    
+    <!-- Progress Bar -->
+    <div class="fixed top-0 left-0 h-1 bg-gradient-to-r from-accent-cyan via-accent-blue to-accent-purple z-[100] transition-all duration-150" id="scroll-progress" style="width: 0%"></div>
+
+    <!-- Ambient Background -->
+    <div id="aurora-container">
+        <div id="aurora-1" class="aurora"></div>
+    </div>
+    <canvas id="starfield"></canvas>
+
+    <!-- Navigation -->
+    <header class="fixed top-0 w-full z-50 bg-[#030014]/50 backdrop-blur-xl border-b border-white/5 transition-all duration-300" id="navbar">
+      <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="#" class="font-display text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-cyan to-accent-blue flex items-center justify-center text-sm">P</div>
+            Punith
+        </a>
+    
+        <div class="hidden md:flex space-x-8 items-center text-sm font-medium">
+          <a href="#about" id="nav-about" class="nav-link text-slate-300 hover:text-white transition-colors">About</a>
+          <a href="#skills" id="nav-skills" class="nav-link text-slate-300 hover:text-white transition-colors">Skills</a>
+          <a href="#experience" id="nav-experience" class="nav-link text-slate-300 hover:text-white transition-colors">Experience</a>
+          <a href="#projects" id="nav-projects" class="nav-link text-slate-300 hover:text-white transition-colors">Projects</a>
+          <a href="#contact" class="btn-glow px-5 py-2 text-sm ml-4">Let's Talk</a>
+        </div>
+    
+        <button id="mobile-menu-button" class="md:hidden text-slate-300 focus:outline-none hover:text-white">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </nav>
+    
+      <div id="mobile-menu" class="hidden md:hidden absolute w-full bg-[#0A0A2A]/95 backdrop-blur-xl border-b border-white/10 px-6 py-6 space-y-4 shadow-2xl">
+        <a href="#about" class="block text-slate-300 hover:text-white font-medium text-lg">About</a>
+        <a href="#skills" class="block text-slate-300 hover:text-white font-medium text-lg">Skills</a>
+        <a href="#experience" class="block text-slate-300 hover:text-white font-medium text-lg">Experience</a>
+        <a href="#projects" class="block text-slate-300 hover:text-white font-medium text-lg">Projects</a>
+        <a href="#contact" class="block mt-4 btn-primary text-center py-3 rounded-lg font-bold text-white">Let's Talk</a>
+      </div>
+    </header>
+
+    <main class="relative z-10 pt-24">
+        <!-- Hero Section -->
+        <section id="home" class="min-h-[90vh] flex flex-col justify-center items-center py-20 px-6 relative overflow-hidden">
+            <!-- Decorative Orbs -->
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent-blue/20 rounded-full blur-[120px] mix-blend-screen -z-10 animate-pulse"></div>
+            
+            <div class="max-w-4xl mx-auto text-center scroll-reveal relative z-10">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-accent-cyan/30 bg-accent-cyan/10 backdrop-blur-md mb-8 text-sm font-medium text-accent-cyan">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-cyan opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-accent-cyan"></span>
+                    </span>
+                    Available for Work
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl lg:text-8xl font-display font-extrabold tracking-tight mb-6 text-white leading-tight">
+                    Hi, I'm <br class="md:hidden" /> <span class="text-gradient-accent">Punith H Singh</span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-slate-400 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+                    A Computer Science Engineer crafting scalable software, intuitive interfaces, and robust cloud architectures.
+                </p>
+            
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <a href="#projects" class="btn-glow btn-primary w-full sm:w-auto text-lg py-4 px-8">
+                        View My Work <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </a>
+                    <a href="https://drive.google.com/file/d/1l3nwV6KQKycLeeCYx6StFO_Mhp6Jm5Jr/view?usp=drive_link" target="_blank" class="btn-glow w-full sm:w-auto text-lg py-4 px-8">
+                        <i data-lucide="download" class="w-5 h-5"></i> Download CV
+                    </a>
+                </div>
+            
+                <div class="flex justify-center gap-6 mt-16">
+                    <a href="https://github.com/Punith-Singh" target="_blank" class="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-accent-cyan hover:text-accent-cyan transition-all duration-300 text-slate-400">
+                        <i data-lucide="github" class="w-6 h-6"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" class="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-accent-blue hover:text-accent-blue transition-all duration-300 text-slate-400">
+                        <i data-lucide="linkedin" class="w-6 h-6"></i>
+                    </a>
+                    <a href="mailto:punithsingh18@gmail.com" class="p-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:border-accent-purple hover:text-accent-purple transition-all duration-300 text-slate-400">
+                        <i data-lucide="mail" class="w-6 h-6"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator Down -->
+            <a href="#about" class="absolute bottom-10 animate-bounce text-slate-500 hover:text-accent-cyan transition-colors">
+                <i data-lucide="mouse" class="w-8 h-8 mb-2 mx-auto"></i>
+            </a>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-24 px-6 relative">
+            <div class="container mx-auto max-w-6xl">
+                <h2 class="section-title scroll-reveal">
+                    <span class="text-accent-purple">01.</span> <span class="text-white">About Me</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+                    <div class="md:col-span-5 scroll-reveal delay-100">
+                        <div class="relative w-full aspect-square max-w-md mx-auto group">
+                            <!-- Artistic Placeholder for Profile Image -->
+                            <div class="absolute inset-0 bg-gradient-to-tr from-accent-cyan/20 to-accent-purple/20 rounded-2xl transform rotate-6 group-hover:rotate-12 transition-transform duration-500 blur-sm"></div>
+                            <div class="absolute inset-0 bg-[#0A0A2A] rounded-2xl border border-white/10 z-10 flex items-center justify-center overflow-hidden">
+                                <div class="w-full h-full bg-mesh opacity-50 absolute inset-0"></div>
+                                <i data-lucide="terminal-square" class="w-32 h-32 text-slate-700 absolute"></i>
+                                <div class="relative z-20 text-center">
+                                    <div class="text-5xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-accent-cyan to-accent-purple">CS</div>
+                                    <div class="text-sm tracking-widest text-slate-400 uppercase mt-2">Engineer</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-7 space-y-6 scroll-reveal delay-200">
+                        <h3 class="text-2xl font-display font-semibold text-white">Innovating through Code.</h3>
+                        <p class="text-slate-400 text-lg leading-relaxed">
+                            I’m a Computer Science Engineer passionate about building scalable, real-world solutions through technology. My expertise spans <strong class="text-white font-medium">Full-Stack Web Development, Cloud Computing, and Machine Learning integration</strong>, with a strong focus on creating impactful, seamless user experiences.
+                        </p>
+                        <p class="text-slate-400 text-lg leading-relaxed">
+                            As a proactive self-learner, I thrive on exploring emerging technologies and continuously expanding my skill set. I’m driven to contribute to organizations that value innovation, creativity, and continuous improvement.
+                        </p>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-6 border-t border-white/10">
+                            <div>
+                                <div class="text-3xl font-display font-bold text-accent-cyan mb-1">2+</div>
+                                <div class="text-sm text-slate-500 uppercase tracking-wider">Years Exp.</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-display font-bold text-accent-blue mb-1">10+</div>
+                                <div class="text-sm text-slate-500 uppercase tracking-wider">Projects</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-display font-bold text-accent-purple mb-1">100%</div>
+                                <div class="text-sm text-slate-500 uppercase tracking-wider">Commitment</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills Section (Bento Box Layout) -->
+        <section id="skills" class="py-24 px-6 relative bg-white/[0.02] border-y border-white/5">
+            <div class="container mx-auto max-w-6xl">
+                <h2 class="section-title scroll-reveal">
+                    <span class="text-accent-cyan">02.</span> <span class="text-white">Technical Arsenal</span>
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Languages -->
+                    <div class="glass-panel p-8 scroll-reveal delay-100">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 mb-6 text-blue-400">
+                            <i data-lucide="code-2" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-display font-bold text-white mb-6">Languages</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-cyan transition-colors"><span class="w-2 h-2 rounded-full bg-yellow-400"></span> Python</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-cyan transition-colors"><span class="w-2 h-2 rounded-full bg-yellow-300"></span> JavaScript</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-cyan transition-colors"><span class="w-2 h-2 rounded-full bg-red-500"></span> Java</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-cyan transition-colors"><span class="w-2 h-2 rounded-full bg-blue-400"></span> SQL</span>
+                        </div>
+                    </div>
+
+                    <!-- Frameworks & DB -->
+                    <div class="glass-panel p-8 scroll-reveal delay-200">
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 mb-6 text-purple-400">
+                            <i class="w-6 h-6" data-lucide="layers"></i>
+                        </div>
+                        <h3 class="text-xl font-display font-bold text-white mb-6">Frameworks & Databases</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-purple transition-colors"><span class="w-2 h-2 rounded-full bg-cyan-400"></span> React.js</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-purple transition-colors"><span class="w-2 h-2 rounded-full bg-green-500"></span> Node.js</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-purple transition-colors"><span class="w-2 h-2 rounded-full bg-blue-300"></span> Flutter</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-purple transition-colors"><span class="w-2 h-2 rounded-full bg-green-600"></span> MongoDB</span>
+                        </div>
+                    </div>
+
+                    <!-- DevOps & Cloud -->
+                    <div class="glass-panel p-8 scroll-reveal delay-300 lg:col-span-1 md:col-span-2">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 mb-6 text-cyan-400">
+                            <i class="w-6 h-6" data-lucide="cloud"></i>
+                        </div>
+                        <h3 class="text-xl font-display font-bold text-white mb-6">DevOps & Cloud</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-blue transition-colors"><span class="w-2 h-2 rounded-full bg-blue-600"></span> Kubernetes</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-blue transition-colors"><span class="w-2 h-2 rounded-full bg-red-600"></span> Jenkins</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-blue transition-colors"><span class="w-2 h-2 rounded-full bg-blue-400"></span> IBM Cloud</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-blue transition-colors"><span class="w-2 h-2 rounded-full bg-orange-500"></span> AWS</span>
+                            <span class="px-4 py-2 bg-[#0A0A2A] border border-white/10 rounded-lg text-sm text-slate-300 flex items-center gap-2 hover:border-accent-blue transition-colors"><span class="w-2 h-2 rounded-full bg-white"></span> Git/GitHub</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience Section -->
+        <section id="experience" class="py-24 px-6 relative">
+            <div class="container mx-auto max-w-4xl">
+                <h2 class="section-title scroll-reveal">
+                    <span class="text-accent-blue">03.</span> <span class="text-white">Experience</span>
+                </h2>
+        
+                <div class="relative pl-8 md:pl-0 mt-16">
+                    <!-- Central Line -->
+                    <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-accent-cyan to-transparent opacity-50 -translate-x-1/2"></div>
+                    <!-- Mobile Line -->
+                    <div class="md:hidden absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-accent-cyan to-transparent opacity-50"></div>
+
+                    <!-- Job 1 -->
+                    <div class="relative mb-20 md:w-1/2 md:pr-12 md:ml-0 scroll-reveal">
+                        <!-- Dot -->
+                        <div class="absolute w-4 h-4 rounded-full bg-[#030014] border-2 border-accent-cyan left-[-33px] md:left-auto md:right-[-8px] top-1.5 z-10 shadow-[0_0_15px_#00F0FF]"></div>
+                        
+                        <div class="glass-panel p-8 text-left group hover:-translate-y-2">
+                            <div class="text-accent-cyan font-mono text-sm mb-2">Feb 2025 – Present</div>
+                            <h3 class="text-2xl font-display font-bold text-white mb-1">Operations Analyst Consultant</h3>
+                            <div class="text-lg text-slate-400 mb-6 font-medium">CRED <span class="text-sm font-normal text-slate-500">(Dreamplug Technologies)</span></div>
+                            <p class="text-slate-400 text-sm leading-relaxed">
+                                Managing operations, analyzing data streams for system optimization, and ensuring seamless execution of internal protocols and user workflows.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Job 2 -->
+                    <div class="relative mb-20 md:w-1/2 md:pl-12 md:ml-auto scroll-reveal delay-100">
+                        <!-- Dot -->
+                        <div class="absolute w-4 h-4 rounded-full bg-[#030014] border-2 border-accent-purple left-[-33px] md:left-[-8px] top-1.5 z-10 shadow-[0_0_15px_#8A2BE2]"></div>
+                        
+                        <div class="glass-panel p-8 text-left group hover:-translate-y-2 border-white/5 hover:border-accent-purple/50">
+                            <div class="text-accent-purple font-mono text-sm mb-2">Sep 2024 – Feb 2025</div>
+                            <h3 class="text-2xl font-display font-bold text-white mb-1">AI-DevOps Engineer Intern</h3>
+                            <div class="text-lg text-slate-400 mb-6 font-medium">Rooman Technologies</div>
+                            <ul class="space-y-3 text-slate-400 text-sm leading-relaxed marker:text-accent-purple list-disc pl-4">
+                                <li>Containerized applications using <strong>Docker</strong> & <strong>Kubernetes</strong> on IBM Cloud.</li>
+                                <li>Built automated <strong>CI/CD pipelines</strong> in Jenkins to accelerate releases.</li>
+                                <li>Deployed scalable architecture across <strong>AWS (S3, EC2, Elastic Beanstalk)</strong>.</li>
+                                <li>Configured IAM roles and security policies for compliance.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Job 3 -->
+                    <div class="relative md:w-1/2 md:pr-12 md:ml-0 scroll-reveal delay-200">
+                        <!-- Dot -->
+                        <div class="absolute w-4 h-4 rounded-full bg-[#030014] border-2 border-accent-blue left-[-33px] md:left-auto md:right-[-8px] top-1.5 z-10 shadow-[0_0_15px_#4D4DFF]"></div>
+                        
+                        <div class="glass-panel p-8 text-left group hover:-translate-y-2 border-white/5 hover:border-accent-blue/50">
+                            <div class="text-accent-blue font-mono text-sm mb-2">Sep 2022 – Oct 2022</div>
+                            <h3 class="text-2xl font-display font-bold text-white mb-1">Full Stack Trainee</h3>
+                            <div class="text-lg text-slate-400 mb-6 font-medium">Indian Tech Keys</div>
+                            <ul class="space-y-3 text-slate-400 text-sm leading-relaxed marker:text-accent-blue list-disc pl-4">
+                                <li>Developed responsive web interfaces with <strong>React.js</strong>.</li>
+                                <li>Contributed to backend architecture and RESTful APIs using <strong>Node.js</strong>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects" class="py-24 px-6 relative">
+            <div class="container mx-auto max-w-7xl">
+                <h2 class="section-title scroll-reveal">
+                    <span class="text-accent-purple">04.</span> <span class="text-white">Featured Work</span>
+                </h2>
+        
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+                    
+                    <!-- Project 1 -->
+                    <div class="card-3d-wrap scroll-reveal">
+                        <div class="card-3d-inner">
+                            <div class="glass-panel h-full flex flex-col p-0 overflow-hidden group">
+                                <div class="h-40 bg-gradient-to-br from-indigo-900 via-purple-900 to-[#0A0A2A] relative flex items-center justify-center border-b border-white/10">
+                                    <i data-lucide="message-square" class="w-12 h-12 text-white/50 group-hover:scale-110 transition-transform duration-500"></i>
+                                    <div class="absolute inset-0 bg-mesh opacity-40"></div>
+                                </div>
+                                <div class="p-8 flex flex-col flex-grow">
+                                    <h3 class="text-2xl font-display font-bold text-white mb-3 group-hover:text-accent-cyan transition-colors">Chatbot App</h3>
+                                    <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Interactive chatbot engineered with a robust Flask backend and Oracle SQL integration.</p>
+                                    <div class="flex flex-wrap gap-2 mt-auto">
+                                        <span class="text-xs font-mono text-accent-cyan bg-accent-cyan/10 px-3 py-1 rounded">Python</span>
+                                        <span class="text-xs font-mono text-accent-cyan bg-accent-cyan/10 px-3 py-1 rounded">Flask</span>
+                                        <span class="text-xs font-mono text-accent-cyan bg-accent-cyan/10 px-3 py-1 rounded">Oracle</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 2 -->
+                    <div class="card-3d-wrap scroll-reveal delay-100">
+                        <div class="card-3d-inner">
+                            <div class="glass-panel h-full flex flex-col p-0 overflow-hidden group">
+                                <div class="h-40 bg-gradient-to-br from-cyan-900 via-blue-900 to-[#0A0A2A] relative flex items-center justify-center border-b border-white/10">
+                                    <i data-lucide="shield" class="w-12 h-12 text-white/50 group-hover:scale-110 transition-transform duration-500"></i>
+                                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20"></div>
+                                </div>
+                                <div class="p-8 flex flex-col flex-grow">
+                                    <h3 class="text-2xl font-display font-bold text-white mb-3 group-hover:text-accent-blue transition-colors">Password Manager</h3>
+                                    <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Secure, responsive credential manager featuring robust user auth and encryption.</p>
+                                    <div class="flex flex-wrap gap-2 mt-auto">
+                                        <span class="text-xs font-mono text-accent-blue bg-accent-blue/10 px-3 py-1 rounded">React.js</span>
+                                        <span class="text-xs font-mono text-accent-blue bg-accent-blue/10 px-3 py-1 rounded">Node.js</span>
+                                        <span class="text-xs font-mono text-accent-blue bg-accent-blue/10 px-3 py-1 rounded">MongoDB</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 3 -->
+                    <div class="card-3d-wrap scroll-reveal delay-200">
+                        <div class="card-3d-inner">
+                            <div class="glass-panel h-full flex flex-col p-0 overflow-hidden group">
+                                <div class="h-40 bg-gradient-to-br from-pink-900 via-purple-900 to-[#0A0A2A] relative flex items-center justify-center border-b border-white/10">
+                                    <i data-lucide="bar-chart-2" class="w-12 h-12 text-white/50 group-hover:scale-110 transition-transform duration-500"></i>
+                                </div>
+                                <div class="p-8 flex flex-col flex-grow">
+                                    <h3 class="text-2xl font-display font-bold text-white mb-3 group-hover:text-pink-400 transition-colors">Sentiment Analysis</h3>
+                                    <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Python & Streamlit app performing Twitter sentiment analysis using Logistic Regression.</p>
+                                    <div class="flex flex-wrap gap-2 mt-auto">
+                                        <span class="text-xs font-mono text-pink-400 bg-pink-400/10 px-3 py-1 rounded">Python</span>
+                                        <span class="text-xs font-mono text-pink-400 bg-pink-400/10 px-3 py-1 rounded">Streamlit</span>
+                                        <span class="text-xs font-mono text-pink-400 bg-pink-400/10 px-3 py-1 rounded">Sklearn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 4 -->
+                    <div class="card-3d-wrap scroll-reveal">
+                        <div class="card-3d-inner">
+                            <div class="glass-panel h-full flex flex-col p-0 overflow-hidden group">
+                                <div class="h-40 bg-gradient-to-br from-emerald-900 via-teal-900 to-[#0A0A2A] relative flex items-center justify-center border-b border-white/10">
+                                    <i data-lucide="car" class="w-12 h-12 text-white/50 group-hover:scale-110 transition-transform duration-500"></i>
+                                </div>
+                                <div class="p-8 flex flex-col flex-grow">
+                                    <h3 class="text-2xl font-display font-bold text-white mb-3 group-hover:text-emerald-400 transition-colors">Speed Detection System</h3>
+                                    <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Computer Vision application utilizing ML algorithms to track and measure vehicle speeds.</p>
+                                    <div class="flex flex-wrap gap-2 mt-auto">
+                                        <span class="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded">Python</span>
+                                        <span class="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded">OpenCV</span>
+                                        <span class="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-3 py-1 rounded">ML</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 5 -->
+                    <div class="card-3d-wrap scroll-reveal delay-100">
+                        <div class="card-3d-inner">
+                            <div class="glass-panel h-full flex flex-col p-0 overflow-hidden group">
+                                <div class="h-40 bg-gradient-to-br from-blue-900 via-indigo-900 to-[#0A0A2A] relative flex items-center justify-center border-b border-white/10">
+                                    <i data-lucide="mouse-pointer-2" class="w-12 h-12 text-white/50 group-hover:scale-110 transition-transform duration-500"></i>
+                                </div>
+                                <div class="p-8 flex flex-col flex-grow">
+                                    <h3 class="text-2xl font-display font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">Air Canvas</h3>
+                                    <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Innovative app allowing users to draw in mid-air via webcam using MediaPipe hand tracking.</p>
+                                    <div class="flex flex-wrap gap-2 mt-auto">
+                                        <span class="text-xs font-mono text-blue-400 bg-blue-400/10 px-3 py-1 rounded">Python</span>
+                                        <span class="text-xs font-mono text-blue-400 bg-blue-400/10 px-3 py-1 rounded">OpenCV</span>
+                                        <span class="text-xs font-mono text-blue-400 bg-blue-400/10 px-3 py-1 rounded">MediaPipe</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 6 -->
+                    <div class="card-3d-wrap scroll-reveal delay-200">
+                        <div class="card-3d-inner">
+                            <div class="glass-panel h-full flex flex-col p-0 overflow-hidden group">
+                                <div class="h-40 bg-gradient-to-br from-orange-900 via-red-900 to-[#0A0A2A] relative flex items-center justify-center border-b border-white/10">
+                                    <i data-lucide="train" class="w-12 h-12 text-white/50 group-hover:scale-110 transition-transform duration-500"></i>
+                                </div>
+                                <div class="p-8 flex flex-col flex-grow">
+                                    <h3 class="text-2xl font-display font-bold text-white mb-3 group-hover:text-orange-400 transition-colors">Train Management System</h3>
+                                    <p class="text-slate-400 text-sm mb-6 flex-grow leading-relaxed">Database-centric app streamlining ticket booking and reservation workflows.</p>
+                                    <div class="flex flex-wrap gap-2 mt-auto">
+                                        <span class="text-xs font-mono text-orange-400 bg-orange-400/10 px-3 py-1 rounded">Python</span>
+                                        <span class="text-xs font-mono text-orange-400 bg-orange-400/10 px-3 py-1 rounded">Flask</span>
+                                        <span class="text-xs font-mono text-orange-400 bg-orange-400/10 px-3 py-1 rounded">SQL</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Hidden Knowledge Base (Admin) -->
+        <section id="learnings-section" class="py-24 px-6 hidden bg-white/[0.02] border-y border-white/5">
+            <div class="container mx-auto max-w-7xl">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+                    <h2 class="text-3xl md:text-5xl font-display font-extrabold text-white flex items-center gap-4">
+                        <i data-lucide="database" class="w-10 h-10 text-accent-cyan"></i> Knowledge Base
+                    </h2>
+                    <div id="admin-controls" class="hidden">
+                        <button id="open-modal-btn" class="btn-glow btn-primary flex items-center gap-2">
+                            <i data-lucide="plus" class="w-5 h-5"></i> Add Entry
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="learnings-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-32 px-6 relative">
+            <div class="container mx-auto max-w-4xl text-center">
+                <div class="glass-panel p-12 md:p-20 relative overflow-hidden text-center scroll-reveal">
+                    <!-- Glow behind form -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-accent-purple/30 rounded-full blur-[100px] mix-blend-screen -z-10"></div>
+                    
+                    <h2 class="text-4xl md:text-6xl font-display font-bold text-white mb-6">Let's Build Something.</h2>
+                    <p class="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
+                        Whether you have a question, a project in mind, or just want to say hi, my inbox is always open.
+                    </p>
+                    
+                    <a href="mailto:punithsingh18@gmail.com" class="btn-glow btn-primary text-xl py-4 px-10 inline-flex items-center gap-3">
+                        Say Hello <i data-lucide="send" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 bg-[#030014]/80 backdrop-blur-lg relative z-10">
+        <div class="container mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-4 text-slate-500 font-medium text-sm">
+                <span>&copy; 2024 Punith H Singh. All rights reserved.</span>
+                <!-- Admin Tools -->
+                <button id="admin-login-btn" class="hover:text-accent-cyan transition-colors" title="Admin Login">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                </button>
+                <button id="admin-logout-btn" class="text-red-500/80 hover:text-red-400 transition-colors hidden" title="Logout">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+    
+            <div class="flex space-x-6">
+                <a href="https://github.com/Punith-Singh" target="_blank" class="text-slate-500 hover:text-white transition-colors">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                </a>
+                <a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" class="text-slate-500 hover:text-accent-blue transition-colors">
+                    <i data-lucide="linkedin" class="w-5 h-5"></i>
+                </a>
+                <a href="mailto:punithsingh18@gmail.com" class="text-slate-500 hover:text-accent-purple transition-colors">
+                    <i data-lucide="mail" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase Add Learning Modal -->
+    <div id="learning-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4 bg-[#030014]/80 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-lg p-8 relative border-accent-cyan/30 shadow-[0_0_50px_rgba(0,240,255,0.1)]">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-500 hover:text-white">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-2xl font-display font-bold text-white mb-6">New Entry</h3>
+            <form id="add-learning-form" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2 uppercase tracking-wide">Title</label>
+                    <input type="text" id="learning-title" class="w-full bg-[#030014]/50 border border-white/10 rounded-lg p-3 text-white focus:border-accent-cyan outline-none transition-colors" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2 uppercase tracking-wide">Notes</label>
+                    <textarea id="learning-desc" rows="4" class="w-full bg-[#030014]/50 border border-white/10 rounded-lg p-3 text-white focus:border-accent-cyan outline-none transition-colors resize-none" required></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2 uppercase tracking-wide">Tags <span class="text-slate-600 normal-case">(comma separated)</span></label>
+                    <input type="text" id="learning-tags" placeholder="e.g. React, AWS" class="w-full bg-[#030014]/50 border border-white/10 rounded-lg p-3 text-white focus:border-accent-cyan outline-none transition-colors">
+                </div>
+                <button type="submit" class="w-full py-3 btn-glow btn-primary rounded-lg text-white font-bold mt-2">
+                    Save Entry
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Interactions Script -->
+    <script>
+        (function() {
+            lucide.createIcons();
+
+            // Aurora Mouse Tracking
+            const aurora = document.getElementById('aurora-1');
+            let mouseX = window.innerWidth / 2;
+            let mouseY = window.innerHeight / 2;
+            
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+
+            // Smooth aurora tracking
+            function animateAurora() {
+                if(aurora) {
+                    const rect = aurora.getBoundingClientRect();
+                    const targetX = mouseX - (rect.width / 2);
+                    const targetY = mouseY - (rect.height / 2);
+                    
+                    // LERP for smooth follow
+                    const currentX = parseFloat(aurora.style.left || 0);
+                    const currentY = parseFloat(aurora.style.top || 0);
+                    
+                    aurora.style.transform = `translate(${targetX}px, ${targetY}px)`;
+                }
+                requestAnimationFrame(animateAurora);
+            }
+            animateAurora();
+
+            // Starfield
+            const canvas = document.getElementById('starfield');
+            const ctx = canvas.getContext('2d');
+            let stars = [];
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+
+            function createStars() {
+                stars = [];
+                for (let i = 0; i < 250; i++) {
+                    stars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        radius: Math.random() * 1.5,
+                        vx: (Math.random() - 0.5) * 0.1,
+                        vy: (Math.random() - 0.5) * 0.1,
+                        opacity: Math.random() * 0.8 + 0.2
+                    });
+                }
+            }
+
+            function tickStars() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let s of stars) {
+                    s.x += s.vx;
+                    s.y += s.vy;
+
+                    if (s.x < 0) s.x = canvas.width;
+                    if (s.x > canvas.width) s.x = 0;
+                    if (s.y < 0) s.y = canvas.height;
+                    if (s.y > canvas.height) s.y = 0;
+
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity * 0.5})`;
+                    ctx.fill();
+                }
+                requestAnimationFrame(tickStars);
+            }
+
+            window.addEventListener('resize', () => { resizeCanvas(); createStars(); });
+            resizeCanvas(); createStars(); tickStars();
+
+            // UI Interactions
+            const mobileBtn = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileBtn && mobileMenu) {
+                mobileBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+                mobileMenu.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+                });
+            }
+
+            // Scroll Reveal Observer
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+            
+            document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+
+            // Nav Highlighting & Progress bar
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const progressBar = document.getElementById('scroll-progress');
+            const navbar = document.getElementById('navbar');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                const scrollY = window.scrollY;
+
+                // Progress Bar
+                const winHeight = document.documentElement.scrollHeight - window.innerHeight;
+                progressBar.style.width = `${(scrollY / winHeight) * 100}%`;
+
+                // Navbar Blur
+                if(scrollY > 50) {
+                    navbar.classList.add('shadow-lg');
+                    navbar.style.background = 'rgba(3, 0, 20, 0.8)';
+                } else {
+                    navbar.classList.remove('shadow-lg');
+                    navbar.style.background = 'rgba(3, 0, 20, 0.5)';
+                }
+
+                // Nav Active State
+                sections.forEach(sec => {
+                    const secTop = sec.offsetTop;
+                    const secHeight = sec.clientHeight;
+                    if (scrollY >= (secTop - 200)) {
+                        current = sec.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('nav-active');
+                    if (link.getAttribute('href') === `#${current}`) {
+                        link.classList.add('nav-active');
+                    }
+                });
+            });
+
+            // 3D Card Hover Effect for Projects
+            const cards = document.querySelectorAll('.card-3d-wrap');
+            cards.forEach(card => {
+                const inner = card.querySelector('.card-3d-inner');
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const xPct = (x / rect.width - 0.5) * 20; 
+                    const yPct = (y / rect.height - 0.5) * -20;
+                    inner.style.transform = `rotateY(${xPct}deg) rotateX(${yPct}deg)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    inner.style.transform = 'rotateY(0) rotateX(0)';
+                });
+            });
+
+        })();
+    </script>
+</body>
+</html>
