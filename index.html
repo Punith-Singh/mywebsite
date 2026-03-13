@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Punith H Singh - Portfolio</title>
+    
+    <!-- Custom Favicon (Gradient 'P') -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%230ea5e9'/><stop offset='100%' stop-color='%236366f1'/></linearGradient></defs><rect width='100' height='100' rx='24' fill='url(%23g)'/><text x='50%' y='54%' font-family='sans-serif' font-weight='bold' font-size='65' fill='white' dominant-baseline='middle' text-anchor='middle'>P</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +17,9 @@
     <!-- Devicon for Tech Stack Logos -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
     
+    <!-- Three.js for 3D Satellite -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -457,6 +464,41 @@
             z-index: 1000; width: 0%; transition: width 0.1s;
         }
 
+        /* Satellite Animation */
+        .animate-satellite {
+            position: absolute;
+            animation: satellite-flight 18s ease-in-out infinite;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        @keyframes satellite-flight {
+            0% {
+                left: -20%;
+                top: 80%;
+                transform: rotate(20deg) scale(0.3);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            50% {
+                left: 50%;
+                top: -30%;
+                transform: rotate(50deg) scale(1);
+                opacity: 1;
+            }
+            80% {
+                opacity: 1;
+            }
+            100% {
+                left: 120%;
+                top: 80%;
+                transform: rotate(80deg) scale(0.3);
+                opacity: 0;
+            }
+        }
+
         .back-to-top {
             position: fixed; bottom: 2rem; right: 2rem;
             background: rgba(22, 27, 34, 0.9);
@@ -527,9 +569,16 @@
     <main class="container mx-auto px-6 py-12 relative z-10 max-w-[1400px]">
 
         <section id="home" class="text-center min-h-[80vh] flex flex-col justify-center items-center py-12 scroll-animation">
-            <h1 class="text-6xl md:text-8xl font-black leading-tight mb-4 text-slate-50 drop-shadow-lg text-gradient-animated">
-                Punith H Singh
-            </h1>
+            
+            <div class="relative inline-block mb-4 mt-8">
+                <h1 class="text-6xl md:text-8xl font-black leading-tight text-slate-50 drop-shadow-lg text-gradient-animated">
+                    Punith H Singh
+                </h1>
+                
+                <!-- Orbiting 3D Satellite Container -->
+                <div class="animate-satellite w-40 h-40 md:w-56 md:h-56 drop-shadow-[0_0_20px_rgba(56,189,248,0.4)]" id="satellite-3d-container">
+                </div>
+            </div>
         
             <p class="text-2xl md:text-3xl text-sky-400 mb-8 font-medium drop-shadow-md">
                 Computer Science Graduate & Software Developer
@@ -657,6 +706,7 @@
                     <div class="flex flex-wrap justify-center items-center gap-4">
                         <span class="skill-pill"><i class="devicon-kubernetes-plain colored text-2xl"></i> Kubernetes</span>
                         <span class="skill-pill"><i class="devicon-jenkins-line colored text-2xl"></i> Jenkins</span>
+                        <span class="skill-pill"><i data-lucide="cloud" class="w-6 h-6 text-blue-400"></i> IBM Cloud</span>
                         <span class="skill-pill"><i class="devicon-git-plain colored text-2xl"></i> Git / GitHub</span>
                         <span class="skill-pill"><i class="devicon-postman-plain colored text-2xl"></i> Postman</span>
                     </div>
@@ -1097,6 +1147,148 @@
                     backToTopBtn.classList.remove('active');
                 }
             });
+
+            // --- 3D Satellite with Three.js ---
+            const satContainer = document.getElementById('satellite-3d-container');
+            if (satContainer && typeof THREE !== 'undefined') {
+                const scene = new THREE.Scene();
+                
+                const w = satContainer.clientWidth || 200;
+                const h = satContainer.clientHeight || 200;
+                const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+                camera.position.z = 10; // Pulled back slightly for the wider lander
+                
+                const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                renderer.setSize(w, h);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                satContainer.appendChild(renderer.domElement);
+
+                // Lighting
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                scene.add(ambientLight);
+                
+                const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+                dirLight.position.set(5, 5, 5);
+                scene.add(dirLight);
+
+                const blueLight = new THREE.PointLight(0x38bdf8, 2, 10);
+                blueLight.position.set(-2, -2, 2);
+                scene.add(blueLight);
+
+                const lander = new THREE.Group();
+
+                // 1. Descent Stage Base (Gold foil octagon)
+                const baseGeo = new THREE.CylinderGeometry(1.3, 1.5, 1.2, 8);
+                const baseMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xffb700, 
+                    metalness: 0.6, 
+                    roughness: 0.5 
+                });
+                const base = new THREE.Mesh(baseGeo, baseMat);
+                lander.add(base);
+
+                // 2. Ascent Stage Top (Silver module)
+                const topGeo = new THREE.CylinderGeometry(0.85, 1.1, 0.9, 8);
+                const topMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xe2e8f0, 
+                    metalness: 0.8, 
+                    roughness: 0.2 
+                });
+                const topModule = new THREE.Mesh(topGeo, topMat);
+                topModule.position.y = 1.05;
+                lander.add(topModule);
+
+                // 3. Engine Bell (Underneath)
+                const engineGeo = new THREE.ConeGeometry(0.5, 0.8, 16);
+                const engineMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.3 });
+                const engine = new THREE.Mesh(engineGeo, engineMat);
+                engine.position.y = -0.9;
+                engine.rotation.x = Math.PI; // Point down
+                lander.add(engine);
+
+                // 4. Landing Legs (4x)
+                const legMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
+                const padMat = new THREE.MeshStandardMaterial({ color: 0xffb700, metalness: 0.4, roughness: 0.7 });
+                const legGeo = new THREE.CylinderGeometry(0.06, 0.04, 2.2, 8);
+                const padGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.1, 16);
+
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i * Math.PI) / 2 + Math.PI/4; // 45, 135, 225, 315 degrees
+                    const legGroup = new THREE.Group();
+                    
+                    // The strut
+                    const leg = new THREE.Mesh(legGeo, legMat);
+                    leg.rotation.x = 0.6; // Angle outward
+                    leg.position.set(0, -0.8, 0.8);
+                    
+                    // The footpad
+                    const pad = new THREE.Mesh(padGeo, padMat);
+                    pad.position.set(0, -1.65, 1.4);
+                    pad.rotation.x = -0.2; // Keep relatively flat
+                    
+                    legGroup.add(leg);
+                    legGroup.add(pad);
+                    legGroup.rotation.y = angle;
+                    lander.add(legGroup);
+                }
+
+                // 5. Communications Dish
+                const dishGeo = new THREE.SphereGeometry(0.4, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2.2);
+                const dish = new THREE.Mesh(dishGeo, topMat);
+                dish.position.set(-0.6, 1.6, 0);
+                dish.rotation.x = Math.PI / 2;
+                dish.rotation.y = -Math.PI / 4;
+                lander.add(dish);
+
+                // 6. Sensor Pole
+                const poleGeo = new THREE.CylinderGeometry(0.03, 0.03, 1.2);
+                const pole = new THREE.Mesh(poleGeo, legMat);
+                pole.position.set(0.5, 2.0, 0);
+                lander.add(pole);
+
+                // 7. Blinking Red Light
+                const lightGeo = new THREE.SphereGeometry(0.08, 16, 16);
+                const lightMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+                const redLight = new THREE.Mesh(lightGeo, lightMat);
+                redLight.position.set(0.5, 2.65, 0);
+                lander.add(redLight);
+
+                scene.add(lander);
+
+                // Initial tilt so we can see the top/side profile beautifully
+                lander.rotation.x = 0.3;
+                lander.rotation.z = 0.1;
+
+                let time = 0;
+                function animateSatellite() {
+                    requestAnimationFrame(animateSatellite);
+                    time += 0.01;
+                    
+                    // Steady rotation on the Y axis (like a stabilizing spin)
+                    lander.rotation.y += 0.008;
+                    // Slight bobbing motion on the Y axis for floating effect
+                    lander.position.y = Math.sin(time * 2) * 0.1;
+
+                    // Blink logic
+                    if (Math.sin(time * 6) > 0) {
+                        lightMat.color.setHex(0xef4444);
+                    } else {
+                        lightMat.color.setHex(0x450a0a);
+                    }
+
+                    renderer.render(scene, camera);
+                }
+                animateSatellite();
+
+                // Handle resize
+                window.addEventListener('resize', () => {
+                    if (satContainer.clientWidth > 0) {
+                        camera.aspect = satContainer.clientWidth / satContainer.clientHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(satContainer.clientWidth, satContainer.clientHeight);
+                    }
+                });
+            }
 
         })(); 
     </script>
