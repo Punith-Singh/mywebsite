@@ -266,30 +266,16 @@
             border-color: var(--accent-color);
             z-index: 10;
         }
-
-        /* Prevent front card from jumping up during flip animation */
-        .project-flip-container:hover .glass-card {
-            transform: none !important;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2) !important;
-        }
         
-        /* 3D Flip Utilities for cross-browser support */
-        .perspective-1000 {
+        .project-card-3d {
             perspective: 1000px;
+            transition: transform 0.1s;
         }
-        .preserve-3d {
-            transform-style: preserve-3d;
-            -webkit-transform-style: preserve-3d;
+        .project-card-3d .glass-card {
+            transition: all 0.3s ease-out;
         }
-        .backface-hidden {
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-        }
-        .flip-180 {
-            transform: rotateY(180deg);
-        }
-        .group:hover .group-hover\:flip-180 {
-            transform: rotateY(180deg);
+        .project-card-3d:hover .glass-card {
+            z-index: 20; 
         }
 
         .tech-tag-3d {
@@ -805,215 +791,100 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-7xl mx-auto px-2 md:px-0">
                 
-                <!-- Project 1: OmniConverter -->
-                <div class="project-flip-container group perspective-1000 h-full min-h-[250px] cursor-pointer">
-                    <div class="relative h-full w-full transition-transform duration-[800ms] preserve-3d group-hover:flip-180 ease-out">
-                        <!-- Front Face -->
-                        <div class="absolute inset-0 h-full w-full backface-hidden">
-                            <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg border-slate-700 h-full">
-                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2 sm:gap-4">
-                                    <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">OmniConverter</h3>
-                                    <div class="self-start inline-flex items-center gap-2 text-[10px] md:text-[11px] font-medium px-3 py-1 rounded-full border border-slate-700/80 text-slate-300 bg-slate-800/50 whitespace-nowrap">
-                                        <span class="relative flex h-2 w-2">
-                                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                          <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                        </span>
-                                        Latest Work
-                                    </div>
-                                </div>
-                                <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">
-                                    A sleek client-side toolkit for compressing, converting, resizing images and generating PDFs, Base64, QR codes, and more — all processed locally in the browser.
-                                </p>
-                                <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
-                                    <span class="glow-tag tag-neon">JavaScript</span>
-                                    <span class="glow-tag tag-neon">HTML</span>
-                                    <span class="glow-tag tag-neon">CSS</span>
-                                </div>
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg hover:shadow-slate-400/20 h-full">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2 sm:gap-4">
+                            <h3 class="text-xl md:text-2xl font-bold text-white leading-tight">OmniConverter</h3>
+                            <div class="self-start inline-flex items-center gap-2 text-[10px] md:text-[11px] font-medium px-3 py-1 rounded-full border border-slate-700/80 text-slate-300 bg-slate-800/50 whitespace-nowrap">
+                                <span class="relative flex h-2 w-2">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                                Latest Work
                             </div>
                         </div>
-                        <!-- Back Face -->
-                        <a href="YOUR_LINK_HERE" target="_blank" class="absolute inset-0 h-full w-full backface-hidden flip-180 block">
-                            <div class="glass-card flex flex-col items-center justify-center p-5 sm:p-6 rounded-2xl shadow-lg border-sky-400/50 bg-slate-800/90 h-full transition-colors hover:border-sky-400 hover:shadow-[0_0_30px_rgba(56,189,248,0.3)]">
-                                <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center mb-4 border border-slate-700 shadow-inner">
-                                    <i data-lucide="external-link" class="w-6 h-6 text-sky-400"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-2 text-center">OmniConverter</h3>
-                                <span class="px-5 py-2 mt-2 bg-gradient-to-r from-sky-500 to-blue-600 text-white text-sm font-semibold rounded-full shadow-lg transition-transform hover:scale-105">
-                                    Click here to know more
-                                </span>
-                            </div>
-                        </a>
+                        <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">
+                            A sleek client-side toolkit for compressing, converting, resizing images and generating PDFs, Base64, QR codes, and more — all processed locally in the browser.
+                        </p>
+                        <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
+                            <span class="glow-tag tag-neon">JavaScript</span>
+                            <span class="glow-tag tag-neon">HTML</span>
+                            <span class="glow-tag tag-neon">CSS</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Project 2: Chatbot Application -->
-                <div class="project-flip-container group perspective-1000 h-full min-h-[250px] cursor-pointer">
-                    <div class="relative h-full w-full transition-transform duration-[800ms] preserve-3d group-hover:flip-180 ease-out">
-                        <div class="absolute inset-0 h-full w-full backface-hidden">
-                            <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg border-slate-700 h-full">
-                                <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Chatbot Application</h3>
-                                <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Engineered an interactive chatbot with a modern UI, robust Python (Flask) backend, and Oracle SQL integration.</p>
-                                <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
-                                    <span class="glow-tag tag-cyan">Python</span>
-                                    <span class="glow-tag tag-cyan">Flask</span>
-                                    <span class="glow-tag tag-cyan">Oracle SQL</span>
-                                </div>
-                            </div>
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg hover:shadow-cyan-400/20 h-full">
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Chatbot Application</h3>
+                        <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Engineered an interactive chatbot with a modern UI, robust Python (Flask) backend, and Oracle SQL integration.</p>
+                        <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
+                            <span class="glow-tag tag-cyan">Python</span>
+                            <span class="glow-tag tag-cyan">Flask</span>
+                            <span class="glow-tag tag-cyan">Oracle SQL</span>
                         </div>
-                        <a href="YOUR_LINK_HERE" target="_blank" class="absolute inset-0 h-full w-full backface-hidden flip-180 block">
-                            <div class="glass-card flex flex-col items-center justify-center p-5 sm:p-6 rounded-2xl shadow-lg border-cyan-400/50 bg-slate-800/90 h-full transition-colors hover:border-cyan-400 hover:shadow-[0_0_30px_rgba(34,211,238,0.3)]">
-                                <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center mb-4 border border-slate-700 shadow-inner">
-                                    <i data-lucide="external-link" class="w-6 h-6 text-cyan-400"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-2 text-center">Chatbot Application</h3>
-                                <span class="px-5 py-2 mt-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg transition-transform hover:scale-105">
-                                    Click here to know more
-                                </span>
-                            </div>
-                        </a>
                     </div>
                 </div>
         
-                <!-- Project 3: Password Manager -->
-                <div class="project-flip-container group perspective-1000 h-full min-h-[250px] cursor-pointer">
-                    <div class="relative h-full w-full transition-transform duration-[800ms] preserve-3d group-hover:flip-180 ease-out">
-                        <div class="absolute inset-0 h-full w-full backface-hidden">
-                            <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg border-slate-700 h-full">
-                                <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Password Manager</h3>
-                                <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Developed a secure, responsive password manager with user authentication, encryption, and credential management.</p>
-                                <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
-                                    <span class="glow-tag tag-indigo">React.js</span>
-                                    <span class="glow-tag tag-indigo">Node.js</span>
-                                    <span class="glow-tag tag-indigo">MongoDB</span>
-                                </div>
-                            </div>
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg hover:shadow-indigo-400/20 h-full">
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Password Manager</h3>
+                        <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Developed a secure, responsive password manager with user authentication, encryption, and credential management.</p>
+                        <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
+                            <span class="glow-tag tag-indigo">React.js</span>
+                            <span class="glow-tag tag-indigo">Node.js</span>
+                            <span class="glow-tag tag-indigo">MongoDB</span>
                         </div>
-                        <a href="YOUR_LINK_HERE" target="_blank" class="absolute inset-0 h-full w-full backface-hidden flip-180 block">
-                            <div class="glass-card flex flex-col items-center justify-center p-5 sm:p-6 rounded-2xl shadow-lg border-indigo-400/50 bg-slate-800/90 h-full transition-colors hover:border-indigo-400 hover:shadow-[0_0_30px_rgba(99,102,241,0.3)]">
-                                <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center mb-4 border border-slate-700 shadow-inner">
-                                    <i data-lucide="external-link" class="w-6 h-6 text-indigo-400"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-2 text-center">Password Manager</h3>
-                                <span class="px-5 py-2 mt-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-semibold rounded-full shadow-lg transition-transform hover:scale-105">
-                                    Click here to know more
-                                </span>
-                            </div>
-                        </a>
                     </div>
                 </div>
         
-                <!-- Project 4: Sentiment Analysis App -->
-                <div class="project-flip-container group perspective-1000 h-full min-h-[250px] cursor-pointer">
-                    <div class="relative h-full w-full transition-transform duration-[800ms] preserve-3d group-hover:flip-180 ease-out">
-                        <div class="absolute inset-0 h-full w-full backface-hidden">
-                            <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg border-slate-700 h-full">
-                                <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Sentiment Analysis App</h3>
-                                <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Built a Python & Streamlit app for Twitter sentiment analysis using Logistic Regression with interactive visualizations.</p>
-                                <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
-                                    <span class="glow-tag tag-pink">Python</span>
-                                    <span class="glow-tag tag-pink">Streamlit</span>
-                                    <span class="glow-tag tag-pink">Scikit-learn</span>
-                                </div>
-                            </div>
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg hover:shadow-pink-400/20 h-full">
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Sentiment Analysis App</h3>
+                        <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Built a Python & Streamlit app for Twitter sentiment analysis using Logistic Regression with interactive visualizations.</p>
+                        <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
+                            <span class="glow-tag tag-pink">Python</span>
+                            <span class="glow-tag tag-pink">Streamlit</span>
+                            <span class="glow-tag tag-pink">Scikit-learn</span>
                         </div>
-                        <a href="YOUR_LINK_HERE" target="_blank" class="absolute inset-0 h-full w-full backface-hidden flip-180 block">
-                            <div class="glass-card flex flex-col items-center justify-center p-5 sm:p-6 rounded-2xl shadow-lg border-pink-400/50 bg-slate-800/90 h-full transition-colors hover:border-pink-400 hover:shadow-[0_0_30px_rgba(236,72,153,0.3)]">
-                                <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center mb-4 border border-slate-700 shadow-inner">
-                                    <i data-lucide="external-link" class="w-6 h-6 text-pink-400"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-2 text-center">Sentiment Analysis App</h3>
-                                <span class="px-5 py-2 mt-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-sm font-semibold rounded-full shadow-lg transition-transform hover:scale-105">
-                                    Click here to know more
-                                </span>
-                            </div>
-                        </a>
                     </div>
                 </div>
         
-                <!-- Project 5: Speed Detection System -->
-                <div class="project-flip-container group perspective-1000 h-full min-h-[250px] cursor-pointer">
-                    <div class="relative h-full w-full transition-transform duration-[800ms] preserve-3d group-hover:flip-180 ease-out">
-                        <div class="absolute inset-0 h-full w-full backface-hidden">
-                            <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg border-slate-700 h-full">
-                                <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Speed Detection System</h3>
-                                <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Used ML to measure vehicle speeds in real-time by analyzing video footage and extracting relevant features.</p>
-                                <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
-                                    <span class="glow-tag tag-emerald">Python</span>
-                                    <span class="glow-tag tag-emerald">OpenCV</span>
-                                    <span class="glow-tag tag-emerald">ML</span>
-                                </div>
-                            </div>
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg hover:shadow-emerald-400/20 h-full">
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Speed Detection System</h3>
+                        <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Used ML to measure vehicle speeds in real-time by analyzing video footage and extracting relevant features.</p>
+                        <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
+                            <span class="glow-tag tag-emerald">Python</span>
+                            <span class="glow-tag tag-emerald">OpenCV</span>
+                            <span class="glow-tag tag-emerald">ML</span>
                         </div>
-                        <a href="YOUR_LINK_HERE" target="_blank" class="absolute inset-0 h-full w-full backface-hidden flip-180 block">
-                            <div class="glass-card flex flex-col items-center justify-center p-5 sm:p-6 rounded-2xl shadow-lg border-emerald-400/50 bg-slate-800/90 h-full transition-colors hover:border-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]">
-                                <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center mb-4 border border-slate-700 shadow-inner">
-                                    <i data-lucide="external-link" class="w-6 h-6 text-emerald-400"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-2 text-center">Speed Detection System</h3>
-                                <span class="px-5 py-2 mt-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold rounded-full shadow-lg transition-transform hover:scale-105">
-                                    Click here to know more
-                                </span>
-                            </div>
-                        </a>
                     </div>
                 </div>
         
-                <!-- Project 6: Air Canvas -->
-                <div class="project-flip-container group perspective-1000 h-full min-h-[250px] cursor-pointer">
-                    <div class="relative h-full w-full transition-transform duration-[800ms] preserve-3d group-hover:flip-180 ease-out">
-                        <div class="absolute inset-0 h-full w-full backface-hidden">
-                            <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg border-slate-700 h-full">
-                                <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Air Canvas</h3>
-                                <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Application enabling users to draw in mid-air using hand gestures tracked by computer vision and interpreted by ML.</p>
-                                <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
-                                    <span class="glow-tag tag-sky">Python</span>
-                                    <span class="glow-tag tag-sky">OpenCV</span>
-                                    <span class="glow-tag tag-sky">MediaPipe</span>
-                                </div>
-                            </div>
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg hover:shadow-sky-400/20 h-full">
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Air Canvas</h3>
+                        <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">Application enabling users to draw in mid-air using hand gestures tracked by computer vision and interpreted by ML.</p>
+                        <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
+                            <span class="glow-tag tag-sky">Python</span>
+                            <span class="glow-tag tag-sky">OpenCV</span>
+                            <span class="glow-tag tag-sky">MediaPipe</span>
                         </div>
-                        <a href="YOUR_LINK_HERE" target="_blank" class="absolute inset-0 h-full w-full backface-hidden flip-180 block">
-                            <div class="glass-card flex flex-col items-center justify-center p-5 sm:p-6 rounded-2xl shadow-lg border-sky-400/50 bg-slate-800/90 h-full transition-colors hover:border-sky-400 hover:shadow-[0_0_30px_rgba(14,165,233,0.3)]">
-                                <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center mb-4 border border-slate-700 shadow-inner">
-                                    <i data-lucide="external-link" class="w-6 h-6 text-sky-400"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-2 text-center">Air Canvas</h3>
-                                <span class="px-5 py-2 mt-2 bg-gradient-to-r from-sky-400 to-blue-500 text-white text-sm font-semibold rounded-full shadow-lg transition-transform hover:scale-105">
-                                    Click here to know more
-                                </span>
-                            </div>
-                        </a>
                     </div>
                 </div>
         
-                <!-- Project 7: Train Management System -->
-                <div class="project-flip-container group perspective-1000 h-full min-h-[250px] cursor-pointer">
-                    <div class="relative h-full w-full transition-transform duration-[800ms] preserve-3d group-hover:flip-180 ease-out">
-                        <div class="absolute inset-0 h-full w-full backface-hidden">
-                            <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg border-slate-700 h-full">
-                                <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Train Management System</h3>
-                                <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">A robust web application using Oracle SQL and Python to streamline ticket booking and reservation management.</p>
-                                <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
-                                    <span class="glow-tag tag-rose">Python</span>
-                                    <span class="glow-tag tag-rose">Flask</span>
-                                    <span class="glow-tag tag-rose">Oracle SQL</span>
-                                </div>
-                            </div>
+                <div class="project-card-3d">
+                    <div class="glass-card flex flex-col p-5 sm:p-6 rounded-2xl shadow-lg hover:shadow-rose-400/20 h-full">
+                        <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Train Management System</h3>
+                        <p class="text-slate-400 text-sm md:text-base mb-4 flex-grow leading-relaxed">A robust web application using Oracle SQL and Python to streamline ticket booking and reservation management.</p>
+                        <div class="mt-auto flex flex-wrap items-center gap-2 pt-4 border-t border-slate-700/50">
+                            <span class="glow-tag tag-rose">Python</span>
+                            <span class="glow-tag tag-rose">Flask</span>
+                            <span class="glow-tag tag-rose">Oracle SQL</span>
                         </div>
-                        <a href="YOUR_LINK_HERE" target="_blank" class="absolute inset-0 h-full w-full backface-hidden flip-180 block">
-                            <div class="glass-card flex flex-col items-center justify-center p-5 sm:p-6 rounded-2xl shadow-lg border-rose-400/50 bg-slate-800/90 h-full transition-colors hover:border-rose-400 hover:shadow-[0_0_30px_rgba(244,63,94,0.3)]">
-                                <div class="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center mb-4 border border-slate-700 shadow-inner">
-                                    <i data-lucide="external-link" class="w-6 h-6 text-rose-400"></i>
-                                </div>
-                                <h3 class="text-xl font-bold text-white mb-2 text-center">Train Management System</h3>
-                                <span class="px-5 py-2 mt-2 bg-gradient-to-r from-rose-500 to-red-600 text-white text-sm font-semibold rounded-full shadow-lg transition-transform hover:scale-105">
-                                    Click here to know more
-                                </span>
-                            </div>
-                        </a>
                     </div>
                 </div>
-                
             </div> 
         </section>
 
@@ -1290,6 +1161,33 @@
 
             sections.forEach(sec => navObserver.observe(sec));
 
+
+            // --- 3D Project Card Tilt Effect (Disabled on touch devices for better UX) ---
+            const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+            
+            if (!isTouchDevice) {
+                const cards = document.querySelectorAll('.project-card-3d');
+                cards.forEach(card => {
+                    const cardInner = card.querySelector('.glass-card');
+                    card.addEventListener('mousemove', (e) => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        const { width, height } = rect;
+                        const rotateY = (x - width / 2) / width * 15; 
+                        const rotateX = (y - height / 2) / height * -15; 
+
+                        cardInner.style.transform = `translateY(-8px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+                        cardInner.style.boxShadow = `0 0 50px var(--shadow-color)`;
+                    });
+
+                    card.addEventListener('mouseleave', () => {
+                        cardInner.style.transform = 'translateY(-8px)'; 
+                        cardInner.style.boxShadow = '0 0 40px var(--shadow-color)';
+                    });
+                });
+            }
 
             // --- Scroll Progress Bar Logic ---
             const progressBar = document.getElementById('scroll-progress');
