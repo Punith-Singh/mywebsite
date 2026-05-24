@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punith H Singh — Portfolio</title>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%230ea5e9'/><stop offset='100%' stop-color='%236366f1'/></linearGradient></defs><rect width='100' height='100' rx='24' fill='url(%23g)'/><text x='50%' y='54%' font-family='sans-serif' font-weight='bold' font-size='65' fill='white' dominant-baseline='middle' text-anchor='middle'>P</text></svg>">
+
+    <script>window.tailwind = window.tailwind || {};</script>
+    <script src="https://cdn.tailwindcss.com?plugins="></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+    <script>
+        // Safe wrapper so Firebase module can call this before DOMContentLoaded
+        window.initLucide = function() {
+            if (window.lucide && typeof lucide.createIcons === 'function') {
+                lucide.createIcons();
+            }
+        };
+    </script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const USER_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAQwkA1Y5ehI9hbPiccmofA4oXlgheK1JM",
+            authDomain: "punith-portfolio.firebaseapp.com",
+            projectId: "punith-portfolio",
+            storageBucket: "punith-portfolio.firebasestorage.app",
+            messagingSenderId: "7568689097",
+            appId: "1:7568689097:web:fbdfd5f9534410b06f4a18",
+            measurementId: "G-3NTP1V4YK0"
+        };
+
+        let firebaseConfig;
+        let isPreviewEnv = false;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+            isPreviewEnv = true;
+        } else {
+            firebaseConfig = USER_FIREBASE_CONFIG;
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'portfolio-db';
+
+        const loginBtn = document.getElementById('admin-login-btn');
+        const logoutBtn = document.getElementById('admin-logout-btn');
+        const learningsSection = document.getElementById('learnings-section');
+        const adminControls = document.getElementById('admin-controls');
+
+        const initAuth = async () => {
+            if (isPreviewEnv && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try { await signInWithCustomToken(auth, __initial_auth_token); }
+                catch (e) { await signInAnonymously(auth); }
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+
+        loginBtn.addEventListener('click', async () => {
+            try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+            catch (error) { console.error("Login failed", error); }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.reload();
+        });
+
+        onAuthStateChanged(auth, (user) => {
+            if (user && !user.isAnonymous) {
+                learningsSection.classList.remove('hidden');
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                adminControls.classList.remove('hidden');
+                loadLearnings(user.uid);
+            } else {
+                learningsSection.classList.add('hidden');
+                loginBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                adminControls.classList.add('hidden');
+            }
+        });
+
+        const learningsGrid = document.getElementById('learnings-grid');
+        const addLearningForm = document.getElementById('add-learning-form');
+        const modal = document.getElementById('learning-modal');
+        const openModalBtn = document.getElementById('open-modal-btn');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        openModalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+        closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+
+        addLearningForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('learning-title').value;
+            const desc = document.getElementById('learning-desc').value;
+            const tags = document.getElementById('learning-tags').value.split(',').map(t => t.trim());
+            const user = auth.currentUser;
+            if (!user) return;
+            const submitBtn = addLearningForm.querySelector('button');
+            submitBtn.innerText = "Saving...";
+            submitBtn.disabled = true;
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'learnings'), {
+                    title, desc, tags, timestamp: serverTimestamp()
+                });
+                addLearningForm.reset();
+                modal.classList.add('hidden');
+            } catch (error) { alert("Error saving."); }
+            finally { submitBtn.innerText = "Save to Knowledge Base"; submitBtn.disabled = false; }
+        });
+
+        function loadLearnings(userId) {
+            const q = collection(db, 'artifacts', appId, 'users', userId, 'learnings');
+            onSnapshot(q, (snapshot) => {
+                const learnings = [];
+                snapshot.forEach((doc) => learnings.push({ id: doc.id, ...doc.data() }));
+                learnings.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                renderLearnings(learnings);
+            });
+        }
+
+        function renderLearnings(learnings) {
+            learningsGrid.innerHTML = '';
+            if (learnings.length === 0) {
+                learningsGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-8">No learnings yet. Add one!</div>`;
+                return;
+            }
+            learnings.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "glass-card p-4 sm:p-6 relative group h-full flex flex-col";
+                const tagsHtml = item.tags && item.tags[0] !== ''
+                    ? `<div class="flex flex-wrap gap-2 mt-auto pt-4">${item.tags.map(tag => `<span class="tech-tag">${tag}</span>`).join('')}</div>`
+                    : '';
+                card.innerHTML = `
+                    <button class="delete-btn absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/20 rounded-full z-20" data-id="${item.id}" title="Delete">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                    <h3 class="text-lg font-bold text-slate-100 mb-2 pr-8">${item.title}</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-4 whitespace-pre-wrap">${item.desc}</p>
+                    ${tagsHtml}
+                    <div class="mt-2 text-xs text-slate-600 font-mono">${item.timestamp ? new Date(item.timestamp.seconds * 1000).toLocaleDateString() : ''}</div>
+                `;
+                learningsGrid.appendChild(card);
+            });
+            initLucide();
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if (confirm('Delete this entry?')) {
+                        const id = e.currentTarget.getAttribute('data-id');
+                        const user = auth.currentUser;
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'learnings', id));
+                    }
+                });
+            });
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg: #080d14;
+            --card: rgba(15, 23, 35, 0.75);
+            --border: rgba(40, 55, 75, 0.8);
+            --text: #b8c5d6;
+            --accent: #38bdf8;
+            --accent2: #818cf8;
+            --glow: rgba(56, 189, 248, 0.18);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+        html { scrollbar-width: thin; scrollbar-color: #1e293b var(--bg); }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* --- BACKGROUNDS --- */
+        #aurora-container { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1; pointer-events: none; }
+        .aurora { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.2; }
+        #aurora-1 { width: 600px; height: 600px; background: radial-gradient(circle, #38bdf8 0%, transparent 70%); }
+        #aurora-2 { width: 400px; height: 400px; background: radial-gradient(circle, #818cf8 0%, transparent 70%); bottom: 20%; right: 10%; }
+        canvas#starfield { position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -2; }
+
+        /* --- SCROLL PROGRESS --- */
+        .scroll-progress { position: fixed; top: 0; left: 0; height: 2px; background: linear-gradient(90deg, #38bdf8, #818cf8, #f472b6); z-index: 1000; width: 0%; transition: width 0.1s; }
+
+        /* --- NAV --- */
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1.5px; background: var(--accent); transition: width 0.3s; border-radius: 1px; }
+        .nav-link:hover::after, .nav-link.nav-active::after { width: 100%; }
+        .nav-link.nav-active { color: var(--accent); }
+
+        /* --- GLASS CARD --- */
+        .glass-card {
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow: 0 0 40px var(--glow), 0 8px 32px rgba(0,0,0,0.4);
+            transform: translateY(-6px);
+        }
+
+        /* --- SECTION TITLE --- */
+        .section-title { display: flex; align-items: center; justify-content: center; gap: 12px; text-align: center; margin-bottom: 3rem; color: #f1f5f9; font-weight: 800; }
+
+        /* --- TAGS --- */
+        .tech-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 6px;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            color: #7dd3fc;
+            letter-spacing: 0.02em;
+        }
+
+        .glow-tag {
+            position: relative; display: inline-flex; align-items: center; justify-content: center;
+            padding: 0.2rem 0.65rem; border-radius: 9999px; font-size: 11px; font-weight: 500;
+            cursor: default; white-space: nowrap; color: #e2e8f0; overflow: hidden; z-index: 1;
+        }
+        .glow-tag::before { content: ''; position: absolute; top: -100%; left: -100%; width: 300%; height: 300%; background: conic-gradient(from 0deg, transparent 70%, var(--tag-color) 85%, var(--tag-color-light) 100%); animation: spin-gradient 3s linear infinite; z-index: -2; }
+        .glow-tag::after { content: ''; position: absolute; inset: 1px; background: #0f172a; border-radius: 9999px; z-index: -1; }
+        @keyframes spin-gradient { to { transform: rotate(360deg); } }
+
+        .tag-red { --tag-color: rgba(239,68,68,.4); --tag-color-light: #ef4444; }
+        .tag-neon { --tag-color: rgba(34,211,238,.4); --tag-color-light: #22d3ee; }
+        .tag-cyan { --tag-color: rgba(34,211,238,.4); --tag-color-light: #22d3ee; }
+        .tag-indigo { --tag-color: rgba(129,140,248,.4); --tag-color-light: #818cf8; }
+        .tag-pink { --tag-color: rgba(244,114,182,.4); --tag-color-light: #f472b6; }
+        .tag-emerald { --tag-color: rgba(52,211,153,.4); --tag-color-light: #34d399; }
+        .tag-sky { --tag-color: rgba(56,189,248,.4); --tag-color-light: #38bdf8; }
+        .tag-rose { --tag-color: rgba(251,113,133,.4); --tag-color-light: #fb7185; }
+
+        /* --- SKILL PILL --- */
+        .skill-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 18px; border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            color: #cbd5e1; font-size: 14px; font-weight: 500;
+            transition: all 0.3s; cursor: default; backdrop-filter: blur(8px);
+        }
+        .skill-pill:hover { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.4); color: #fff; transform: translateY(-3px); }
+
+        /* --- SKILL BAR --- */
+        .skill-bar-track { height: 3px; border-radius: 2px; background: rgba(255,255,255,0.06); overflow: hidden; margin-top: 8px; }
+        .skill-bar-fill { height: 100%; border-radius: 2px; width: 0%; transition: width 1.4s cubic-bezier(0.23, 1, 0.32, 1); }
+
+        /* --- STAT CARD --- */
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .stat-card:hover { border-color: rgba(56,189,248,0.3); background: rgba(56,189,248,0.05); }
+
+        /* --- AVAILABILITY BADGE --- */
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.7; }
+            70% { transform: scale(2.2); opacity: 0; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+        .pulse-dot { position: relative; display: inline-flex; }
+        .pulse-dot::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: #22c55e; animation: pulse-ring 2s ease-out infinite; }
+
+        /* --- EXPERIENCE CARD --- */
+        .exp-card {
+            background: rgba(15, 23, 35, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        .exp-card:hover { border-color: rgba(56,189,248,0.3); }
+        .exp-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; box-shadow: 0 0 8px currentColor; }
+
+        /* --- SCROLL ANIMATION --- */
+        .scroll-animation { opacity: 0; transform: translateY(36px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
+        .scroll-animation.animate { opacity: 1; transform: translateY(0); }
+
+        /* --- ANIMATE FADE IN --- */
+        .animate-fade-in { animation: fadeIn 0.35s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- SATELLITE --- */
+        .animate-satellite { position: absolute; animation: sat-fly 18s ease-in-out infinite; z-index: 20; pointer-events: none; }
+        @keyframes sat-fly {
+            0% { left: -20%; top: 80%; transform: rotate(20deg) scale(0.3); opacity: 0; }
+            20% { opacity: 1; }
+            50% { left: 50%; top: -30%; transform: rotate(50deg) scale(1); opacity: 1; }
+            80% { opacity: 1; }
+            100% { left: 120%; top: 80%; transform: rotate(80deg) scale(0.3); opacity: 0; }
+        }
+
+        /* --- TEXT GRADIENT --- */
+        .text-gradient {
+            background: linear-gradient(135deg, #e2e8f0 0%, #c7d2fe 30%, #38bdf8 60%, #c7d2fe 80%, #e2e8f0 100%);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: text-shine 8s linear infinite;
+        }
+        @keyframes text-shine { 0% { background-position: 150% 50%; } 100% { background-position: -150% 50%; } }
+
+        /* --- BACK TO TOP --- */
+        .back-to-top { position: fixed; bottom: 1.5rem; right: 1.5rem; background: rgba(15,23,35,0.9); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); color: white; padding: 0.7rem; border-radius: 50%; z-index: 40; opacity: 0; pointer-events: none; transition: all 0.3s; }
+        .back-to-top.active { opacity: 1; pointer-events: all; }
+        .back-to-top:hover { background: var(--accent); border-color: var(--accent); transform: translateY(-4px); }
+
+        /* --- SCROLL INDICATOR --- */
+        @keyframes bounceSlow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+        .animate-bounceSlow { animation: bounceSlow 2s ease-in-out infinite; }
+
+        /* --- MODAL --- */
+        .modal-overlay { background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
+
+        /* --- LATEST BADGE --- */
+        @keyframes glow-nudge {
+            0%, 100% { box-shadow: 0 0 4px rgba(255,255,255,0.08); }
+            50% { box-shadow: 0 0 14px rgba(255,255,255,0.45); }
+        }
+        .badge-latest { animation: glow-nudge 2s ease-in-out infinite; }
+
+        /* --- ABOUT HIGHLIGHTS --- */
+        .highlight-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 12px; font-weight: 500; padding: 5px 12px;
+            border-radius: 999px; border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.05); color: #cbd5e1;
+            transition: all 0.25s;
+        }
+        .highlight-tag:hover { background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.35); color: #e2e8f0; }
+
+        /* --- CONTACT GLOW --- */
+        .contact-btn {
+            display: inline-block; padding: 14px 36px;
+            background: linear-gradient(135deg, #ef4444, #ec4899);
+            color: white; font-weight: 700; border-radius: 14px;
+            box-shadow: 0 0 30px rgba(239,68,68,0.25);
+            transition: all 0.3s; font-size: 15px;
+        }
+        .contact-btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 0 50px rgba(239,68,68,0.45); }
+
+        .info-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .info-row:last-child { border-bottom: none; }
+    </style>
+</head>
+<body class="antialiased w-full">
+
+    <div class="scroll-progress" id="scroll-progress"></div>
+
+    <div id="aurora-container">
+        <div id="aurora-1" class="aurora"></div>
+        <div id="aurora-2" class="aurora"></div>
+    </div>
+    <canvas id="starfield"></canvas>
+
+    <!-- Desktop sidebars -->
+    <div class="hidden xl:flex fixed bottom-0 left-10 flex-col items-center gap-5 z-50">
+        <a href="https://github.com/Punith-Singh" target="_blank" class="text-slate-500 hover:text-sky-400 hover:-translate-y-1 transition-all"><i data-lucide="github" class="w-5 h-5"></i></a>
+        <a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" class="text-slate-500 hover:text-sky-400 hover:-translate-y-1 transition-all"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+        <div class="w-px h-20 bg-gradient-to-b from-slate-600 to-transparent mt-2"></div>
+    </div>
+    <div class="hidden xl:flex fixed bottom-0 right-10 flex-col items-center gap-5 z-50">
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=punithsingh18@gmail.com" target="_blank" class="text-slate-500 hover:text-sky-400 hover:-translate-y-1 transition-all tracking-widest text-xs font-mono" style="writing-mode:vertical-rl;">punithsingh18@gmail.com</a>
+        <div class="w-px h-20 bg-gradient-to-b from-slate-600 to-transparent mt-2"></div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 border-b border-white/5 bg-[rgba(8,13,20,0.85)] backdrop-blur-xl">
+        <nav class="container mx-auto px-4 md:px-6 py-4 flex justify-between items-center max-w-[1400px]">
+            <a href="#" class="text-lg md:text-xl font-bold text-slate-100 tracking-wide hover:text-white transition-colors">Punith H Singh</a>
+            <div class="hidden md:flex space-x-8 items-center text-sm">
+                <a href="#about" class="nav-link text-slate-400 hover:text-white font-medium transition-all">About</a>
+                <a href="#skills" class="nav-link text-slate-400 hover:text-white font-medium transition-all">Skills</a>
+                <a href="#experience" class="nav-link text-slate-400 hover:text-white font-medium transition-all">Experience</a>
+                <a href="#projects" class="nav-link text-slate-400 hover:text-white font-medium transition-all">Projects</a>
+                <a href="#contact" class="px-5 py-2 bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition-all text-sm">Contact</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-slate-100 focus:outline-none p-2">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4 bg-[rgba(8,13,20,0.97)] backdrop-blur-xl space-y-1 absolute w-full border-b border-slate-800">
+            <a href="#about" class="block py-3 text-slate-300 hover:text-white font-medium border-b border-slate-800/60">About</a>
+            <a href="#skills" class="block py-3 text-slate-300 hover:text-white font-medium border-b border-slate-800/60">Skills</a>
+            <a href="#experience" class="block py-3 text-slate-300 hover:text-white font-medium border-b border-slate-800/60">Experience</a>
+            <a href="#projects" class="block py-3 text-slate-300 hover:text-white font-medium border-b border-slate-800/60">Projects</a>
+            <a href="#contact" class="block mt-3 px-5 py-3 bg-gradient-to-br from-red-500 to-pink-500 text-white font-semibold rounded-xl text-center">Contact</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 md:px-6 py-8 relative z-10 max-w-[1400px]">
+
+        <!-- ==============================
+             HERO SECTION
+        ================================ -->
+        <section id="home" class="min-h-[88vh] flex flex-col justify-center items-center text-center py-16 scroll-animation">
+
+            <!-- Availability Badge -->
+            <div class="flex items-center gap-2.5 mb-6 px-4 py-2 rounded-full border border-green-500/25 bg-green-500/8 backdrop-blur-sm">
+                <span class="pulse-dot"><span class="relative w-2 h-2 rounded-full bg-green-500 block"></span></span>
+                <span class="text-xs font-medium text-green-400 tracking-wide">Available for opportunities</span>
+            </div>
+
+            <div class="relative inline-block mb-4">
+                <h1 class="text-5xl sm:text-7xl md:text-8xl font-black leading-none text-gradient px-2">
+                    Punith H Singh
+                </h1>
+                <div class="animate-satellite w-28 h-28 sm:w-40 sm:h-40 md:w-52 md:h-52 drop-shadow-[0_0_20px_rgba(56,189,248,0.35)]" id="satellite-3d-container"></div>
+            </div>
+
+            <p class="text-lg sm:text-xl md:text-2xl text-sky-400 mb-3 font-medium px-4">
+                Software Developer building scalable web apps & cloud infrastructure
+            </p>
+            <p class="text-sm md:text-base text-slate-500 mb-10 font-mono">Bengaluru, India</p>
+
+            <!-- Stats Row -->
+            <div class="flex gap-4 sm:gap-8 mb-10 flex-wrap justify-center">
+                <div class="stat-card px-5 py-3 min-w-[90px]">
+                    <p class="text-2xl font-bold text-slate-100">7+</p>
+                    <p class="text-xs text-slate-500 mt-1">Projects</p>
+                </div>
+                <div class="stat-card px-5 py-3 min-w-[90px]">
+                    <p class="text-2xl font-bold text-slate-100">2+</p>
+                    <p class="text-xs text-slate-500 mt-1">Internships</p>
+                </div>
+                <div class="stat-card px-5 py-3 min-w-[90px]">
+                    <p class="text-2xl font-bold text-slate-100">5+</p>
+                    <p class="text-xs text-slate-500 mt-1">Cloud Tools</p>
+                </div>
+                <div class="stat-card px-5 py-3 min-w-[90px]">
+                    <p class="text-2xl font-bold text-slate-100">1yr+</p>
+                    <p class="text-xs text-slate-500 mt-1">Experience</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-4 sm:px-0 mb-10">
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=punithsingh18@gmail.com" target="_blank" class="contact-btn text-center">Get in Touch</a>
+                <a href="https://drive.google.com/file/d/1l3nwV6KQKycLeeCYx6StFO_Mhp6Jm5Jr/view?usp=drive_link" class="inline-block px-8 py-3 bg-white/5 border border-white/10 text-white font-semibold rounded-xl hover:bg-white/10 hover:-translate-y-1 transition-all text-center backdrop-blur-sm">Download CV</a>
+            </div>
+
+            <!-- Mobile social -->
+            <div class="flex xl:hidden justify-center gap-5 text-slate-500">
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=punithsingh18@gmail.com" target="_blank" class="hover:text-sky-400 transition-colors p-2"><i data-lucide="mail" class="w-6 h-6"></i></a>
+                <a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" class="hover:text-sky-400 transition-colors p-2"><i data-lucide="linkedin" class="w-6 h-6"></i></a>
+                <a href="https://github.com/Punith-Singh" target="_blank" class="hover:text-sky-400 transition-colors p-2"><i data-lucide="github" class="w-6 h-6"></i></a>
+            </div>
+
+            <!-- Scroll indicator -->
+            <div id="scroll-indicator" class="fixed bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 cursor-pointer z-50 select-none hidden sm:flex">
+                <span class="text-[10px] tracking-[0.25em] text-slate-500 uppercase">Scroll</span>
+                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-slate-400 animate-bounceSlow">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m0 0l-6-6m6 6l6-6" />
+                    </svg>
+                </div>
+            </div>
+            <script>
+                document.getElementById("scroll-indicator").addEventListener("click", () => document.getElementById("about")?.scrollIntoView({ behavior: "smooth" }));
+                window.addEventListener("scroll", () => {
+                    const el = document.getElementById("scroll-indicator");
+                    if (el) { const o = Math.max(1 - window.scrollY / 150, 0); el.style.opacity = o; el.style.pointerEvents = o === 0 ? 'none' : 'auto'; }
+                });
+            </script>
+        </section>
+
+        <!-- ==============================
+             ABOUT SECTION
+        ================================ -->
+        <section id="about" class="py-16 md:py-24 scroll-animation">
+            <h2 class="section-title text-3xl md:text-5xl lg:text-6xl">
+                <i data-lucide="user" class="w-8 h-8 md:w-10 md:h-10 text-purple-400 shrink-0"></i> About Me
+            </h2>
+
+            <div class="max-w-5xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6 md:gap-8">
+
+                    <!-- Bio column -->
+                    <div class="md:col-span-3 glass-card p-6 sm:p-8 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-purple-500 via-sky-500 to-indigo-500 opacity-70"></div>
+                        <p class="text-slate-300 text-base md:text-lg leading-relaxed mb-5">
+                            I'm a Computer Science Engineer passionate about building scalable, real-world solutions. My expertise spans <span class="text-white font-semibold">web development, Cloud &amp; DevOps, and computer vision</span>, with a strong focus on impactful user experiences.
+                        </p>
+                        <p class="text-slate-400 text-sm md:text-base leading-relaxed mb-6">
+                            A proactive self-learner who thrives on exploring emerging technologies — driven to work with teams that value <span class="text-white font-semibold">innovation and continuous improvement</span>.
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="highlight-tag"><i data-lucide="code-2" class="w-3.5 h-3.5"></i> Full Stack</span>
+                            <span class="highlight-tag"><i data-lucide="cloud" class="w-3.5 h-3.5"></i> Cloud / DevOps</span>
+                            <span class="highlight-tag"><i data-lucide="eye" class="w-3.5 h-3.5"></i> Computer Vision</span>
+                            <span class="highlight-tag"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i> Mobile (Flutter)</span>
+                        </div>
+                    </div>
+
+                    <!-- Info column -->
+                    <div class="md:col-span-2 glass-card p-6 sm:p-8 flex flex-col justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Quick Info</p>
+                            <div class="info-row">
+                                <i data-lucide="graduation-cap" class="w-4 h-4 text-sky-400 shrink-0"></i>
+                                <div>
+                                    <p class="text-xs text-slate-500">Education</p>
+                                    <p class="text-sm font-medium text-slate-200">B.E. Computer Science</p>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-sky-400 shrink-0"></i>
+                                <div>
+                                    <p class="text-xs text-slate-500">Location</p>
+                                    <p class="text-sm font-medium text-slate-200">Bengaluru, India</p>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <i data-lucide="briefcase" class="w-4 h-4 text-sky-400 shrink-0"></i>
+                                <div>
+                                    <p class="text-xs text-slate-500">Currently at</p>
+                                    <p class="text-sm font-medium text-slate-200">CRED · Operations Analyst</p>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <i data-lucide="zap" class="w-4 h-4 text-sky-400 shrink-0"></i>
+                                <div>
+                                    <p class="text-xs text-slate-500">Exploring</p>
+                                    <p class="text-sm font-medium text-slate-200">System Design · GenAI APIs</p>
+                                </div>
+                            </div>
+                            <div class="info-row">
+                                <i data-lucide="target" class="w-4 h-4 text-sky-400 shrink-0"></i>
+                                <div>
+                                    <p class="text-xs text-slate-500">Looking for</p>
+                                    <p class="text-sm font-medium text-slate-200">SWE / DevOps roles</p>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="https://drive.google.com/file/d/1l3nwV6KQKycLeeCYx6StFO_Mhp6Jm5Jr/view?usp=drive_link" class="mt-6 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-sky-500/30 bg-sky-500/8 text-sky-400 text-sm font-semibold hover:bg-sky-500/15 transition-all">
+                            <i data-lucide="download" class="w-4 h-4"></i> Download Resume
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==============================
+             SKILLS SECTION
+        ================================ -->
+        <section id="skills" class="py-16 md:py-24 scroll-animation">
+            <h2 class="section-title text-3xl md:text-5xl lg:text-6xl">
+                <i data-lucide="cpu" class="w-8 h-8 md:w-10 md:h-10 text-green-400 shrink-0"></i> Technical Expertise
+            </h2>
+
+            <div class="max-w-5xl mx-auto space-y-12">
+
+                <!-- Languages + Proficiency -->
+                <div class="glass-card p-6 sm:p-8">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">Languages</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-5" id="skill-bars">
+                        <div>
+                            <div class="flex justify-between items-center text-sm"><span class="text-slate-200 flex items-center gap-2"><i class="devicon-python-plain colored text-base"></i> Python</span><span class="text-slate-500 text-xs">90%</span></div>
+                            <div class="skill-bar-track"><div class="skill-bar-fill" style="background: linear-gradient(90deg,#1d9e75,#34d399)" data-w="90"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center text-sm"><span class="text-slate-200 flex items-center gap-2"><i class="devicon-javascript-plain colored text-base"></i> JavaScript</span><span class="text-slate-500 text-xs">85%</span></div>
+                            <div class="skill-bar-track"><div class="skill-bar-fill" style="background: linear-gradient(90deg,#ca8a04,#facc15)" data-w="85"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center text-sm"><span class="text-slate-200 flex items-center gap-2"><i class="devicon-java-plain colored text-base"></i> Java</span><span class="text-slate-500 text-xs">75%</span></div>
+                            <div class="skill-bar-track"><div class="skill-bar-fill" style="background: linear-gradient(90deg,#b45309,#f97316)" data-w="75"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center text-sm"><span class="text-slate-200 flex items-center gap-2"><i class="devicon-mysql-plain colored text-base"></i> SQL</span><span class="text-slate-500 text-xs">78%</span></div>
+                            <div class="skill-bar-track"><div class="skill-bar-fill" style="background: linear-gradient(90deg,#0369a1,#38bdf8)" data-w="78"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Web & Mobile pills -->
+                <div class="text-center">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">Web, Mobile &amp; Database</p>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <span class="skill-pill"><i class="devicon-react-original colored text-xl"></i> React.js</span>
+                        <span class="skill-pill"><i class="devicon-flutter-plain colored text-xl"></i> Flutter</span>
+                        <span class="skill-pill"><i class="devicon-nodejs-plain colored text-xl"></i> Node.js</span>
+                        <span class="skill-pill"><i class="devicon-mongodb-plain colored text-xl"></i> MongoDB</span>
+                    </div>
+                </div>
+
+                <!-- DevOps pills -->
+                <div class="text-center">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-6">DevOps &amp; Cloud</p>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <span class="skill-pill"><i class="devicon-kubernetes-plain colored text-xl"></i> Kubernetes</span>
+                        <span class="skill-pill"><i class="devicon-jenkins-line colored text-xl"></i> Jenkins</span>
+                        <span class="skill-pill"><i class="devicon-ibm-plain colored text-xl"></i> IBM Cloud</span>
+                        <span class="skill-pill"><i class="devicon-amazonwebservices-plain-wordmark colored text-xl"></i> AWS</span>
+                        <span class="skill-pill"><i class="devicon-docker-plain colored text-xl"></i> Docker</span>
+                        <span class="skill-pill"><i class="devicon-git-plain colored text-xl"></i> Git / GitHub</span>
+                        <span class="skill-pill"><i class="devicon-postman-plain colored text-xl"></i> Postman</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==============================
+             EXPERIENCE SECTION
+        ================================ -->
+        <section id="experience" class="py-16 md:py-24 scroll-animation">
+            <h2 class="section-title text-3xl md:text-5xl lg:text-6xl">
+                <i data-lucide="briefcase" class="w-8 h-8 md:w-10 md:h-10 text-blue-400 shrink-0"></i> Experience
+            </h2>
+
+            <div class="max-w-4xl mx-auto flex flex-col gap-4">
+
+                <!-- CRED -->
+                <div class="exp-card flex gap-4 items-start">
+                    <div class="exp-dot" style="background:#22c55e;color:#22c55e;margin-top:8px"></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap justify-between items-start gap-2 mb-1">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-100">Operations Analyst Consultant</h3>
+                                <p class="text-sm text-slate-400"><span class="text-sky-400 font-semibold">CRED</span> <span class="text-slate-500">· Dreamplug Technologies Pvt. Ltd.</span></p>
+                            </div>
+                            <div class="flex flex-col items-end gap-1.5">
+                                <span class="text-xs text-slate-500 font-mono whitespace-nowrap">Feb 2025 – Present</span>
+                                <span class="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 whitespace-nowrap">Current Role</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <span class="glow-tag tag-sky">Operations</span>
+                            <span class="glow-tag tag-sky">FinTech</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rooman Technologies -->
+                <div class="exp-card flex gap-4 items-start">
+                    <div class="exp-dot" style="background:#38bdf8;color:#38bdf8;margin-top:8px"></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap justify-between items-start gap-2 mb-1">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-100">AI-DevOps Engineer</h3>
+                                <p class="text-sm text-slate-400"><span class="text-sky-400 font-semibold">Rooman Technologies Pvt. Ltd.</span> <span class="text-slate-500">· Internship</span></p>
+                            </div>
+                            <span class="text-xs text-slate-500 font-mono whitespace-nowrap">Sep 2024 – Feb 2025</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-2 mb-3">
+                            <span class="glow-tag tag-emerald">Docker &amp; K8s</span>
+                            <span class="glow-tag tag-emerald">Jenkins CI/CD</span>
+                            <span class="glow-tag tag-emerald">AWS</span>
+                            <span class="glow-tag tag-emerald">IBM Cloud</span>
+                        </div>
+                        <button class="exp-toggle-btn text-xs font-medium text-slate-400 hover:text-sky-400 flex items-center gap-1.5 transition-colors bg-white/3 border border-white/8 px-3 py-1.5 rounded-lg">
+                            <span>View responsibilities</span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-300"></i>
+                        </button>
+                        <div class="exp-content hidden mt-3 bg-white/2 border border-white/6 rounded-xl p-4">
+                            <ul class="space-y-2 text-sm text-slate-300 leading-relaxed list-disc ml-4 marker:text-sky-500">
+                                <li>Designed and deployed cloud-native apps using <strong>Docker</strong> &amp; <strong>Kubernetes</strong> on <strong>IBM Cloud</strong>, improving infrastructure scalability.</li>
+                                <li>Built and optimized <strong>CI/CD pipelines</strong> in <strong>Jenkins</strong>, automating build, test, and deployment workflows.</li>
+                                <li>Monitored cloud infrastructure and resolved issues to ensure high availability and minimize downtime.</li>
+                                <li>Utilized <strong>AWS S3</strong>, <strong>EC2</strong>, and <strong>Elastic Beanstalk</strong> across multiple active environments.</li>
+                                <li>Configured <strong>IAM roles</strong>, security groups, and access policies for secure AWS environments.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indian Tech Keys -->
+                <div class="exp-card flex gap-4 items-start">
+                    <div class="exp-dot" style="background:#818cf8;color:#818cf8;margin-top:8px"></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap justify-between items-start gap-2 mb-1">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-100">Full Stack Trainee</h3>
+                                <p class="text-sm text-slate-400"><span class="text-sky-400 font-semibold">Indian Tech Keys</span> <span class="text-slate-500">· Internship</span></p>
+                            </div>
+                            <span class="text-xs text-slate-500 font-mono whitespace-nowrap">Sep – Oct 2022</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-2 mb-3">
+                            <span class="glow-tag tag-indigo">React.js</span>
+                            <span class="glow-tag tag-indigo">Node.js</span>
+                            <span class="glow-tag tag-indigo">REST APIs</span>
+                        </div>
+                        <button class="exp-toggle-btn text-xs font-medium text-slate-400 hover:text-sky-400 flex items-center gap-1.5 transition-colors bg-white/3 border border-white/8 px-3 py-1.5 rounded-lg">
+                            <span>View responsibilities</span>
+                            <i data-lucide="chevron-down" class="w-3.5 h-3.5 transition-transform duration-300"></i>
+                        </button>
+                        <div class="exp-content hidden mt-3 bg-white/2 border border-white/6 rounded-xl p-4">
+                            <ul class="space-y-2 text-sm text-slate-300 leading-relaxed list-disc ml-4 marker:text-sky-500">
+                                <li>Developed responsive UI components using <strong>React.js</strong> to enhance user interaction.</li>
+                                <li>Contributed to a <strong>Node.js</strong> backend API — focused on endpoint creation and secure database integration.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==============================
+             PROJECTS SECTION
+        ================================ -->
+        <section id="projects" class="py-16 md:py-24 scroll-animation">
+            <h2 class="section-title text-3xl md:text-5xl lg:text-6xl">
+                <i data-lucide="code" class="w-8 h-8 md:w-10 md:h-10 text-cyan-400 shrink-0"></i> Featured Projects
+            </h2>
+
+            <!-- Changed to flat grid, removed perspective wrappers -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 max-w-7xl mx-auto">
+
+                <!-- Project 1: OmniConverter (Example of Impact Writing) -->
+                <div class="glass-card flex flex-col p-6 rounded-2xl h-full relative group transition-all hover:border-sky-400/50 min-h-[260px]">
+                    <div class="flex justify-between items-start mb-4 gap-3">
+                        <h3 class="text-xl font-bold text-white leading-tight">OmniConverter</h3>
+                        <div class="badge-latest shrink-0 flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-full border border-slate-600 text-slate-300 bg-slate-800 whitespace-nowrap">
+                            <span class="relative flex h-1.5 w-1.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span></span>
+                            Latest
+                        </div>
+                    </div>
+                    <!-- Impact focused description -->
+                    <p class="text-slate-400 text-sm leading-relaxed flex-grow mb-5">
+                        Client-side toolkit for compressing and converting media. <strong class="text-sky-300 font-medium">Eliminates server costs and ensures 100% data privacy</strong> by processing files locally within the browser via modern JavaScript APIs.
+                    </p>
+                    <div class="mt-auto space-y-4">
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="glow-tag tag-neon !text-[10px] !px-2.5">JavaScript</span>
+                            <span class="glow-tag tag-neon !text-[10px] !px-2.5">HTML/CSS</span>
+                            <span class="glow-tag tag-neon !text-[10px] !px-2.5">Web APIs</span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-4 border-t border-white/5">
+                            <a href="https://omniconverter-kappa.vercel.app/" target="_blank" class="flex-1 text-center text-xs font-semibold text-white bg-white/5 hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/50 py-2 rounded-lg transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="external-link" class="w-4 h-4 text-sky-400"></i> Live Demo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 2: Chatbot -->
+                <div class="glass-card flex flex-col p-6 rounded-2xl h-full relative group transition-all hover:border-cyan-400/50 min-h-[260px]">
+                    <div class="flex justify-between items-start mb-4 gap-3">
+                        <h3 class="text-xl font-bold text-white leading-tight">Chatbot Application</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed flex-grow mb-5">
+                        Interactive chatbot with a modern UI, robust Python (Flask) backend, and Oracle SQL integration to persist and manage conversation histories securely.
+                    </p>
+                    <div class="mt-auto space-y-4">
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="glow-tag tag-cyan !text-[10px] !px-2.5">Python</span>
+                            <span class="glow-tag tag-cyan !text-[10px] !px-2.5">Flask</span>
+                            <span class="glow-tag tag-cyan !text-[10px] !px-2.5">Oracle SQL</span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-4 border-t border-white/5">
+                            <a href="https://github.com/Punith-Singh/chatbot" target="_blank" class="flex-1 text-center text-xs font-semibold text-white bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/50 py-2 rounded-lg transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="github" class="w-4 h-4 text-cyan-400"></i> View Code
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 3: Password Manager -->
+                <div class="glass-card flex flex-col p-6 rounded-2xl h-full relative group transition-all hover:border-indigo-400/50 min-h-[260px]">
+                    <div class="flex justify-between items-start mb-4 gap-3">
+                        <h3 class="text-xl font-bold text-white leading-tight">Password Manager</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed flex-grow mb-5">
+                        Secure, responsive password manager with user authentication, encryption, and full credential management stored safely in a NoSQL database.
+                    </p>
+                    <div class="mt-auto space-y-4">
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="glow-tag tag-indigo !text-[10px] !px-2.5">React.js</span>
+                            <span class="glow-tag tag-indigo !text-[10px] !px-2.5">Node.js</span>
+                            <span class="glow-tag tag-indigo !text-[10px] !px-2.5">MongoDB</span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-4 border-t border-white/5">
+                            <a href="https://password-manager-cduz.vercel.app/" target="_blank" class="flex-1 text-center text-xs font-semibold text-white bg-white/5 hover:bg-indigo-500/20 border border-white/10 hover:border-indigo-500/50 py-2 rounded-lg transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="external-link" class="w-4 h-4 text-indigo-400"></i> Live Demo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 4: Sentiment Analysis -->
+                <div class="glass-card flex flex-col p-6 rounded-2xl h-full relative group transition-all hover:border-pink-400/50 min-h-[260px]">
+                    <div class="flex justify-between items-start mb-4 gap-3">
+                        <h3 class="text-xl font-bold text-white leading-tight">Sentiment Analysis App</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed flex-grow mb-5">
+                        Python &amp; Streamlit app analyzing Twitter datasets using Logistic Regression to generate interactive and insightful data visualizations on public sentiment.
+                    </p>
+                    <div class="mt-auto space-y-4">
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="glow-tag tag-pink !text-[10px] !px-2.5">Python</span>
+                            <span class="glow-tag tag-pink !text-[10px] !px-2.5">Streamlit</span>
+                            <span class="glow-tag tag-pink !text-[10px] !px-2.5">Scikit-learn</span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-4 border-t border-white/5">
+                            <a href="https://github.com/Punith-Singh/sentiment-analysis" target="_blank" class="flex-1 text-center text-xs font-semibold text-white bg-white/5 hover:bg-pink-500/20 border border-white/10 hover:border-pink-500/50 py-2 rounded-lg transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="github" class="w-4 h-4 text-pink-400"></i> View Code
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 5: Speed Detection -->
+                <div class="glass-card flex flex-col p-6 rounded-2xl h-full relative group transition-all hover:border-emerald-400/50 min-h-[260px]">
+                    <div class="flex justify-between items-start mb-4 gap-3">
+                        <h3 class="text-xl font-bold text-white leading-tight">Speed Detection System</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed flex-grow mb-5">
+                        ML-powered computer vision system analyzing video footage to extract motion features and calculate vehicle speeds accurately in real-time.
+                    </p>
+                    <div class="mt-auto space-y-4">
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="glow-tag tag-emerald !text-[10px] !px-2.5">Python</span>
+                            <span class="glow-tag tag-emerald !text-[10px] !px-2.5">OpenCV</span>
+                            <span class="glow-tag tag-emerald !text-[10px] !px-2.5">ML</span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-4 border-t border-white/5">
+                            <a href="https://github.com/Punith-Singh/Speed-Detection-System" target="_blank" class="flex-1 text-center text-xs font-semibold text-white bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/50 py-2 rounded-lg transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="github" class="w-4 h-4 text-emerald-400"></i> View Code
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 6: Air Canvas -->
+                <div class="glass-card flex flex-col p-6 rounded-2xl h-full relative group transition-all hover:border-sky-400/50 min-h-[260px]">
+                    <div class="flex justify-between items-start mb-4 gap-3">
+                        <h3 class="text-xl font-bold text-white leading-tight">Air Canvas</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed flex-grow mb-5">
+                        Real-time gesture recognition app enabling mid-air drawing. <strong class="text-sky-300 font-medium">Processes video feeds with ultra-low latency</strong> using MediaPipe and OpenCV, translating complex hand landmarks into a seamless, touchless UI.
+                    </p>
+                    <div class="mt-auto space-y-4">
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="glow-tag tag-sky !text-[10px] !px-2.5">Python</span>
+                            <span class="glow-tag tag-sky !text-[10px] !px-2.5">OpenCV</span>
+                            <span class="glow-tag tag-sky !text-[10px] !px-2.5">MediaPipe</span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-4 border-t border-white/5">
+                            <a href="https://air-canvas-azure.vercel.app/" target="_blank" class="flex-1 text-center text-xs font-semibold text-white bg-white/5 hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/50 py-2 rounded-lg transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="external-link" class="w-4 h-4 text-sky-400"></i> Live Demo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 7: Train Management -->
+                <div class="glass-card flex flex-col p-6 rounded-2xl h-full relative group transition-all hover:border-rose-400/50 min-h-[260px]">
+                    <div class="flex justify-between items-start mb-4 gap-3">
+                        <h3 class="text-xl font-bold text-white leading-tight">Train Management</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed flex-grow mb-5">
+                        Robust web application using Oracle SQL and Python (Flask) to streamline complex ticket booking and passenger reservation workflows.
+                    </p>
+                    <div class="mt-auto space-y-4">
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="glow-tag tag-rose !text-[10px] !px-2.5">Python</span>
+                            <span class="glow-tag tag-rose !text-[10px] !px-2.5">Flask</span>
+                            <span class="glow-tag tag-rose !text-[10px] !px-2.5">Oracle SQL</span>
+                        </div>
+                        <div class="flex items-center gap-3 pt-4 border-t border-white/5">
+                            <a href="YOUR_LINK_HERE" target="_blank" class="flex-1 text-center text-xs font-semibold text-white bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/50 py-2 rounded-lg transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="github" class="w-4 h-4 text-rose-400"></i> View Code
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Knowledge Base (Admin Only) -->
+        <section id="learnings-section" class="py-12 md:py-16 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                <h2 class="section-title !mb-0 text-2xl md:text-4xl">
+                    <i data-lucide="book-open" class="w-6 h-6 md:w-8 md:h-8 text-orange-400 shrink-0"></i> Knowledge Base
+                </h2>
+                <div id="admin-controls" class="hidden w-full sm:w-auto">
+                    <button id="open-modal-btn" class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-br from-orange-500 to-red-500 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 text-sm">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add Learning
+                    </button>
+                </div>
+            </div>
+            <div id="learnings-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-7xl mx-auto"></div>
+        </section>
+
+        <!-- ==============================
+             CONTACT SECTION
+        ================================ -->
+        <section id="contact" class="py-16 md:py-24 scroll-animation">
+            <div class="max-w-2xl mx-auto text-center">
+                <h2 class="section-title text-3xl md:text-5xl lg:text-6xl justify-center">
+                    <i data-lucide="send" class="w-8 h-8 md:w-10 md:h-10 text-red-400 shrink-0"></i> Get In Touch
+                </h2>
+                <p class="text-slate-400 text-base md:text-lg mb-10 leading-relaxed px-4">
+                    Open to new opportunities and collaborations. Whether it's a role, a project, or just a chat about tech — my inbox is always open.
+                </p>
+
+                <div class="glass-card p-6 sm:p-8 mb-8 text-left">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=punithsingh18@gmail.com" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-white/8 hover:border-sky-500/30 hover:bg-sky-500/5 transition-all group">
+                            <i data-lucide="mail" class="w-5 h-5 text-slate-500 group-hover:text-sky-400 transition-colors shrink-0"></i>
+                            <div>
+                                <p class="text-xs text-slate-500">Email</p>
+                                <p class="text-sm text-slate-300 group-hover:text-white transition-colors">punithsingh18@gmail.com</p>
+                            </div>
+                        </a>
+                        <a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-white/8 hover:border-sky-500/30 hover:bg-sky-500/5 transition-all group">
+                            <i data-lucide="linkedin" class="w-5 h-5 text-slate-500 group-hover:text-sky-400 transition-colors shrink-0"></i>
+                            <div>
+                                <p class="text-xs text-slate-500">LinkedIn</p>
+                                <p class="text-sm text-slate-300 group-hover:text-white transition-colors">punith-h-singh</p>
+                            </div>
+                        </a>
+                        <a href="https://github.com/Punith-Singh" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-white/8 hover:border-sky-500/30 hover:bg-sky-500/5 transition-all group">
+                            <i data-lucide="github" class="w-5 h-5 text-slate-500 group-hover:text-sky-400 transition-colors shrink-0"></i>
+                            <div>
+                                <p class="text-xs text-slate-500">GitHub</p>
+                                <p class="text-sm text-slate-300 group-hover:text-white transition-colors">Punith-Singh</p>
+                            </div>
+                        </a>
+                        <a href="https://drive.google.com/file/d/1l3nwV6KQKycLeeCYx6StFO_Mhp6Jm5Jr/view?usp=drive_link" target="_blank" class="flex items-center gap-3 p-3 rounded-xl border border-white/8 hover:border-sky-500/30 hover:bg-sky-500/5 transition-all group">
+                            <i data-lucide="file-text" class="w-5 h-5 text-slate-500 group-hover:text-sky-400 transition-colors shrink-0"></i>
+                            <div>
+                                <p class="text-xs text-slate-500">Resume</p>
+                                <p class="text-sm text-slate-300 group-hover:text-white transition-colors">Download CV</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=punithsingh18@gmail.com" target="_blank" class="contact-btn">Say Hello 👋</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/5 bg-[rgba(8,13,20,0.9)]">
+        <div class="container mx-auto max-w-[1400px] px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3 text-slate-500 text-sm">
+                <span>&copy; 2024 Punith H Singh. All Rights Reserved.</span>
+                <button id="admin-login-btn" class="text-slate-700 hover:text-slate-500 transition-colors p-1" title="Admin Login">
+                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                </button>
+                <button id="admin-logout-btn" class="text-red-600 hover:text-red-400 transition-colors p-1 hidden" title="Logout">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+            <div class="flex xl:hidden gap-4">
+                <a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" class="text-slate-500 hover:text-blue-400 transition-colors p-1"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                <a href="https://github.com/Punith-Singh" target="_blank" class="text-slate-500 hover:text-white transition-colors p-1"><i data-lucide="github" class="w-5 h-5"></i></a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=punithsingh18@gmail.com" target="_blank" class="text-slate-500 hover:text-sky-400 transition-colors p-1"><i data-lucide="mail" class="w-5 h-5"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add Learning Modal -->
+    <div id="learning-modal" class="fixed inset-0 z-[100] modal-overlay hidden flex items-center justify-center p-4">
+        <div class="glass-card bg-[#080d14] max-w-lg w-full p-6 sm:p-8 relative border-slate-700/60">
+            <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-500 hover:text-white p-1 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold text-white mb-5">Add Learning</h3>
+            <form id="add-learning-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Title</label>
+                    <input type="text" id="learning-title" class="w-full bg-white/4 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-sky-500 outline-none transition-colors" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Notes</label>
+                    <textarea id="learning-desc" rows="4" class="w-full bg-white/4 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-sky-500 outline-none transition-colors" required></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Tags (comma separated)</label>
+                    <input type="text" id="learning-tags" placeholder="React, AWS..." class="w-full bg-white/4 border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-sky-500 outline-none transition-colors">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-sky-600 to-blue-600 text-white font-bold rounded-lg hover:opacity-90 transition-opacity">
+                    Save to Knowledge Base
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Back to Top -->
+    <a href="#home" class="back-to-top" id="back-to-top"><i data-lucide="arrow-up" class="w-5 h-5"></i></a>
+
+    <script>
+    (function () {
+        lucide.createIcons();
+
+        // Mobile email links
+        const emailLinks = document.querySelectorAll('a[href^="https://mail.google.com/mail/"]');
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        if (isMobile) {
+            emailLinks.forEach(link => { link.href = "mailto:punithsingh18@gmail.com"; link.removeAttribute("target"); });
+        }
+
+        // Mobile menu
+        const menuBtn = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn?.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        [...(mobileMenu?.querySelectorAll('a') || [])].forEach(a => a.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+        // Experience accordion
+        document.querySelectorAll('.exp-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('svg') || this.querySelector('i');
+                const span = this.querySelector('span');
+                const isHidden = content.classList.contains('hidden');
+                content.classList.toggle('hidden', !isHidden);
+                if (isHidden) content.classList.add('animate-fade-in');
+                if (icon) icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                span.textContent = isHidden ? 'Hide responsibilities' : 'View responsibilities';
+            });
+        });
+
+        // Aurora mouse follow
+        const aurora1 = document.getElementById('aurora-1');
+        document.addEventListener('mousemove', e => {
+            if (aurora1) aurora1.style.transform = `translate(${e.clientX - 300}px, ${e.clientY - 300}px)`;
+        });
+
+        // Starfield
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let stars = [], mouse = {};
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        function createStars() {
+            stars = [];
+            const n = window.innerWidth < 768 ? 180 : 380;
+            for (let i = 0; i < n; i++) stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.4, vx: (Math.random() - 0.5) * 0.18, vy: (Math.random() - 0.5) * 0.18 });
+        }
+        function drawStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.globalCompositeOperation = "lighter";
+            stars.forEach(s => { ctx.fillStyle = "#3d5166"; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill(); });
+        }
+        function updateStars() {
+            stars.forEach(s => {
+                if (mouse.x !== undefined) {
+                    const dx = s.x - mouse.x, dy = s.y - mouse.y, dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 140) { const f = (140 - dist) / 140; s.vx += (dx / dist) * f * 0.45; s.vy += (dy / dist) * f * 0.45; }
+                }
+                s.vx *= 0.97; s.vy *= 0.97; s.x += s.vx; s.y += s.vy;
+                if (s.x < 0) s.x = canvas.width; if (s.x > canvas.width) s.x = 0;
+                if (s.y < 0) s.y = canvas.height; if (s.y > canvas.height) s.y = 0;
+            });
+        }
+        function tick() { drawStars(); updateStars(); requestAnimationFrame(tick); }
+        window.addEventListener('resize', () => { resizeCanvas(); createStars(); });
+        resizeCanvas(); createStars(); tick();
+
+        // Scroll animations
+        const sObs = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('animate'); }), { threshold: 0.08 });
+        document.querySelectorAll('.scroll-animation').forEach(el => sObs.observe(el));
+
+        // Skill bars — animate when visible
+        const barObs = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.querySelectorAll('.skill-bar-fill').forEach(bar => { bar.style.width = bar.dataset.w + '%'; });
+                    barObs.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.2 });
+        const sbGrid = document.getElementById('skill-bars');
+        if (sbGrid) barObs.observe(sbGrid);
+
+        // Nav active highlight
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const navObs = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    navLinks.forEach(l => { l.classList.toggle('nav-active', l.getAttribute('href') === `#${e.target.id}`); });
+                }
+            });
+        }, { rootMargin: '-30% 0px -70% 0px' });
+        sections.forEach(s => navObs.observe(s));
+
+        // Scroll progress + back to top
+        const bar = document.getElementById('scroll-progress');
+        const btt = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            const pct = (window.scrollY / (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100;
+            bar.style.width = pct + '%';
+            btt.classList.toggle('active', window.scrollY > 500);
+        });
+
+        // 3D Lander (Three.js)
+        const satContainer = document.getElementById('satellite-3d-container');
+        if (satContainer && typeof THREE !== 'undefined') {
+            const scene = new THREE.Scene();
+            const w = satContainer.clientWidth || 200, h = satContainer.clientHeight || 200;
+            const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+            camera.position.z = 10;
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            satContainer.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const dl = new THREE.DirectionalLight(0xffffff, 1.2);
+            dl.position.set(5, 5, 5);
+            scene.add(dl);
+            const bl = new THREE.PointLight(0x38bdf8, 2, 10);
+            bl.position.set(-2, -2, 2);
+            scene.add(bl);
+
+            const lander = new THREE.Group();
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0xffb700, metalness: 0.6, roughness: 0.5 });
+            const topMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.8, roughness: 0.2 });
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
+            const padMat = new THREE.MeshStandardMaterial({ color: 0xffb700, metalness: 0.4, roughness: 0.7 });
+            const engineMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.8, roughness: 0.3 });
+
+            lander.add(Object.assign(new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.5, 1.2, 8), baseMat)));
+            const top = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 1.1, 0.9, 8), topMat);
+            top.position.y = 1.05; lander.add(top);
+            const eng = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.8, 16), engineMat);
+            eng.position.y = -0.9; eng.rotation.x = Math.PI; lander.add(eng);
+
+            for (let i = 0; i < 4; i++) {
+                const lg = new THREE.Group();
+                const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.04, 2.2, 8), legMat);
+                leg.rotation.x = 0.6; leg.position.set(0, -0.8, 0.8);
+                const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.1, 16), padMat);
+                pad.position.set(0, -1.65, 1.4); pad.rotation.x = -0.2;
+                lg.add(leg); lg.add(pad); lg.rotation.y = (i * Math.PI) / 2 + Math.PI / 4;
+                lander.add(lg);
+            }
+
+            const dish = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2.2), topMat);
+            dish.position.set(-0.6, 1.6, 0); dish.rotation.x = Math.PI / 2; dish.rotation.y = -Math.PI / 4;
+            lander.add(dish);
+
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.2), legMat);
+            pole.position.set(0.5, 2.0, 0); lander.add(pole);
+
+            const lightMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const redLight = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 16), lightMat);
+            redLight.position.set(0.5, 2.65, 0); lander.add(redLight);
+
+            scene.add(lander);
+            lander.rotation.x = 0.3; lander.rotation.z = 0.1;
+
+            let t = 0;
+            (function animSat() {
+                requestAnimationFrame(animSat);
+                t += 0.01;
+                lander.rotation.y += 0.008;
+                lander.position.y = Math.sin(t * 2) * 0.1;
+                lightMat.color.setHex(Math.sin(t * 6) > 0 ? 0xef4444 : 0x450a0a);
+                renderer.render(scene, camera);
+            })();
+
+            window.addEventListener('resize', () => {
+                if (satContainer.clientWidth > 0) {
+                    camera.aspect = satContainer.clientWidth / satContainer.clientHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(satContainer.clientWidth, satContainer.clientHeight);
+                }
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
