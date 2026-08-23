@@ -145,12 +145,12 @@
 <body class="antialiased selection:bg-indigo-500/30 selection:text-indigo-200 overflow-hidden">
 
     <!-- Page Preloader -->
-    <div id="preloader" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#09090b] transition-all duration-700 ease-in-out">
+    <div id="preloader" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#09090b]" style="transition: background-color 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
         <div class="relative flex items-center justify-center">
             <!-- Outer spinning ring -->
-            <div class="absolute w-20 h-20 border-t-2 border-r-2 border-indigo-500 rounded-full animate-spin"></div>
+            <div id="preloader-spinner" class="absolute w-20 h-20 border-t-2 border-r-2 border-indigo-500 rounded-full animate-spin transition-opacity duration-300"></div>
             <!-- Inner logo -->
-            <div class="relative w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center z-10 shadow-xl overflow-hidden">
+            <div id="preloader-logo" class="relative w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center z-10 shadow-xl overflow-hidden" style="transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
                 <span class="text-lg font-bold text-zinc-400">P.</span>
                 <img src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" alt="Punith H Singh" class="absolute inset-0 w-full h-full object-cover z-10" onerror="this.style.display='none'">
             </div>
@@ -168,7 +168,7 @@
             
             <!-- Logo -->
             <a href="#home" aria-label="Go to home" class="text-zinc-100 font-bold tracking-tight text-lg flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <div class="relative w-8 h-8 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900 flex items-center justify-center shrink-0">
+                <div id="nav-logo" class="relative w-8 h-8 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900 flex items-center justify-center shrink-0" style="transition: opacity 0.3s ease;">
                     <span class="text-xs font-bold text-zinc-400">P.</span>
                     <img src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" alt="Punith H Singh" loading="lazy" class="absolute inset-0 w-full h-full object-cover z-10" onerror="this.style.display='none'">
                 </div>
@@ -594,16 +594,46 @@
         // Init Icons
         lucide.createIcons();
 
-        // Page Preloader
+        // Page Preloader (Flying Logo Animation)
         window.addEventListener('load', () => {
             const preloader = document.getElementById('preloader');
-            // Small delay so the user actually sees the loader
+            const preloaderLogo = document.getElementById('preloader-logo');
+            const navLogo = document.getElementById('nav-logo');
+            const spinner = document.getElementById('preloader-spinner');
+
             setTimeout(() => {
-                preloader.classList.add('loaded');
+                // Get exact screen coordinates
+                const navRect = navLogo.getBoundingClientRect();
+                const preRect = preloaderLogo.getBoundingClientRect();
+
+                // Calculate center-to-center difference
+                const navCenterX = navRect.left + navRect.width / 2;
+                const navCenterY = navRect.top + navRect.height / 2;
+                const preCenterX = preRect.left + preRect.width / 2;
+                const preCenterY = preRect.top + preRect.height / 2;
+
+                const deltaX = navCenterX - preCenterX;
+                const deltaY = navCenterY - preCenterY;
+                const scale = navRect.width / preRect.width;
+
+                // Hide the actual nav logo temporarily so we can fly the preloader one into its place
+                navLogo.style.opacity = '0';
+                
+                // Fade out preloader background and spinner
+                preloader.style.backgroundColor = 'transparent';
+                preloader.style.pointerEvents = 'none';
+                spinner.style.opacity = '0';
+
+                // Fly the logo!
+                preloaderLogo.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scale})`;
+                preloaderLogo.style.borderRadius = '0.5rem'; // Match nav-logo rounded-lg
+
+                // Re-enable scrolling
                 document.body.classList.remove('overflow-hidden');
                 
-                // Remove from DOM entirely after fade transition finishes (700ms)
+                // Cleanup after flight finishes
                 setTimeout(() => {
+                    navLogo.style.opacity = '1';
                     preloader.remove();
                 }, 700);
             }, 600);
