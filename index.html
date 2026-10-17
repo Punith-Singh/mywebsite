@@ -21,10 +21,9 @@
     <!-- Minimalist Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%2309090b' stroke='%236366f1' stroke-width='6'/><text x='50%' y='54%' font-family='sans-serif' font-weight='bold' font-size='58' fill='white' dominant-baseline='middle' text-anchor='middle'>P</text></svg>">
 
-    <!-- Fonts: Inter (Professional UI) and JetBrains Mono (Tech/Code) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Fonts: Gilroy (Global UI & Typography) -->
+    <link rel="preconnect" href="https://fonts.cdnfonts.com" crossorigin>
+    <link href="https://fonts.cdnfonts.com/css/gilroy-bold?styles=20876,20877,20878,20879,20880" rel="stylesheet">
     
     <!-- Icons (Lucide & Devicons) -->
     <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
@@ -38,8 +37,8 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
+                        sans: ['Gilroy', 'Gilroy-Regular', 'Gilroy-Medium', 'Gilroy-Bold', 'sans-serif'],
+                        mono: ['Gilroy', 'Gilroy-Medium', 'sans-serif'],
                     },
                     colors: {
                         zinc: {
@@ -106,8 +105,17 @@
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
+            font-family: 'Gilroy', 'Gilroy-Regular', 'Gilroy-Medium', -apple-system, BlinkMacSystemFont, sans-serif;
             overflow-x: hidden;
             transition: background-color 0.35s ease, color 0.35s ease;
+        }
+
+        h1, h2, h3, h4, strong, .font-bold, .font-extrabold {
+            font-family: 'Gilroy-Bold', 'Gilroy', sans-serif;
+        }
+
+        .font-semibold, .font-medium {
+            font-family: 'Gilroy-Medium', 'Gilroy', sans-serif;
         }
         
         /* Premium Custom Scrollbar */
@@ -520,9 +528,6 @@
         <a href="https://www.linkedin.com/in/punith-h-singh" aria-label="LinkedIn Profile" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-zinc-900/80 hover:-translate-y-1 transition-all" title="LinkedIn">
             <i data-lucide="linkedin" class="w-5 h-5"></i>
         </a>
-        <button onclick="copyEmailToClipboard()" aria-label="Copy Email Address" class="p-2 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-zinc-900/80 hover:-translate-y-1 transition-all" title="Copy Email">
-            <i data-lucide="copy" class="w-4 h-4"></i>
-        </button>
         <div class="w-px h-24 bg-gradient-to-b from-zinc-700 to-transparent mt-1"></div>
     </div>
     <div class="hidden xl:flex fixed bottom-0 right-8 flex-col items-center gap-6 z-40">
@@ -610,7 +615,6 @@
                                 <button id="tab-btn-config" onclick="switchHeroTab('config')" class="px-2.5 py-1 rounded-md bg-zinc-800 text-zinc-100 transition-all">profile.ts</button>
                                 <button id="tab-btn-term" onclick="switchHeroTab('terminal')" class="px-2.5 py-1 rounded-md text-zinc-400 hover:text-zinc-200 transition-all">terminal</button>
                             </div>
-                            <!--<span class="text-[11px] font-mono text-zinc-500 hidden sm:inline">zsh</span>-->
                         </div>
 
                         <!-- Tab 1: Profile Code View -->
@@ -643,11 +647,7 @@
                                 <div>};</div>
                             </div>
 
-                            <div class="mt-5 pt-4 border-t border-zinc-800/60 flex items-center justify-between text-[11px] text-zinc-500">
-                                <!--<span class="flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                    UTF-8 · TypeScript
-                                </span>-->
+                            <div class="mt-5 pt-4 border-t border-zinc-800/60 flex items-center justify-end text-[11px] text-zinc-500">
                                 <button onclick="switchHeroTab('terminal')" class="text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
                                     <span>Run Interactive CLI</span>
                                     <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
@@ -724,10 +724,6 @@
                 <!-- Bento Card 1: Engineering Bio (7 cols) -->
                 <div class="md:col-span-7 spotlight-card border border-zinc-800/80 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
                     <div>
-                       <!-- <div class="inline-flex items-center gap-2 text-xs font-mono text-indigo-400 mb-4">
-                            <i data-lucide="" class="w-4 h-4"></i>
-                            <span>ENGINEERING MINDSET</span>
-                        </div>-->
                         <h3 class="text-xl sm:text-2xl font-bold text-zinc-100 mb-4 leading-snug">
                             Bridging full-stack application architecture with cloud-native reliability.
                         </h3>
@@ -758,17 +754,17 @@
                 </div>
 
                 <!-- Bento Right Column (5 cols) -->
-                <div class="md:col-span-5 flex flex-col gap-5">
+                <div class="md:col-span-5 flex flex-col justify-between gap-5">
                     
                     <!-- Quick Snapshot Card -->
-                    <div class="spotlight-card border border-zinc-800/80 rounded-2xl p-6">
+                    <div class="spotlight-card border border-zinc-800/80 rounded-2xl p-6 flex-grow flex flex-col justify-center">
                         <h3 class="text-zinc-100 font-semibold mb-5 text-xs font-mono uppercase tracking-widest flex items-center justify-between">
                             <span>Quick Snapshot</span>
                             <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
                         </h3>
                         <ul class="space-y-4">
                             <li class="flex items-start gap-4 p-2.5 rounded-xl hover:bg-zinc-800/40 transition-colors">
-                                <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xxl text-indigo-400 shrink-0">
+                                <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400 shrink-0">
                                     <i data-lucide="briefcase" class="w-4 h-4"></i>
                                 </div>
                                 <div>
@@ -777,7 +773,7 @@
                                 </div>
                             </li>
                             <li class="flex items-start gap-4 p-2.5 rounded-xl hover:bg-zinc-800/40 transition-colors">
-                                <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xxl text-indigo-400 shrink-0">
+                                <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400 shrink-0">
                                     <i data-lucide="graduation-cap" class="w-4 h-4"></i>
                                 </div>
                                 <div>
@@ -785,102 +781,30 @@
                                     <p class="text-xs text-zinc-400 mt-0.5">Engineering Graduate</p>
                                 </div>
                             </li>
-                           <!-- <li class="flex items-start gap-4 p-2.5 rounded-xl hover:bg-zinc-800/40 transition-colors">
-                                <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400 shrink-0">
-                                    <i data-lucide="code-2" class="w-4 h-4"></i>
-                                </div>
-                                <div>
-                                    <p class="text-zinc-100 font-semibold text-sm">1+ Year Experience</p>
-                                    <p class="text-xs text-zinc-400 mt-0.5">Full Stack Development & DevOps</p>
-                                </div>
-                            </li>-->
                         </ul>
                     </div>
 
-                    <!-- Live Base & Timezone Card -->
-                    <!--<div class="spotlight-card border border-zinc-800/80 rounded-2xl p-6 flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="relative flex items-center justify-center w-11 h-11 rounded-xl bg-zinc-900 border border-zinc-700/80 text-emerald-400">
+                    <!-- Live Current Location & Timezone Card (Single-Line Aligned) -->
+                    <div class="spotlight-card border border-zinc-800/80 rounded-2xl px-5 py-4 bg-zinc-950/60 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3.5 min-w-0">
+                            <div class="relative flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
                                 <i data-lucide="map-pin" class="w-5 h-5"></i>
-                                <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-                                <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full"></span>
+                                <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                </span>
                             </div>
-                            <div>
-                                <p class="text-xs font-mono uppercase tracking-wider text-zinc-500">Base Station</p>
-                                <p class="text-sm font-semibold text-zinc-100">Bengaluru, India</p>
-                                <p class="text-xs font-mono text-indigo-400 mt-0.5" id="blr-time">IST (UTC+5:30)</p>
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-mono uppercase tracking-widest text-zinc-500 whitespace-nowrap leading-none mb-1.5">Current Location</p>
+                                <h3 class="text-sm sm:text-base font-bold text-zinc-100 whitespace-nowrap truncate leading-tight">Bengaluru, India</h3>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <span class="text-[11px] font-mono px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-400">12.9716° N</span>
+
+                        <div class="text-right shrink-0 pl-3.5 border-l border-zinc-800/80">
+                            <p class="text-[10px] font-mono uppercase tracking-widest text-zinc-500 whitespace-nowrap leading-none mb-1.5">IST · UTC+5:30</p>
+                            <p id="blr-time" class="text-sm sm:text-base font-bold text-indigo-400 tabular-nums whitespace-nowrap leading-tight">--:-- --</p>
                         </div>
-                    </div>-->
-                    
-                    <div class="spotlight-card border border-zinc-800/80 rounded-2xl p-5 sm:p-6
-                                bg-zinc-950/60 flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-                                <div class="relative flex items-center justify-center
-                                        w-12 h-12 shrink-0 rounded-xl
-                                        bg-indigo-500/10 border border-indigo-500/20
-                                        text-indigo-400">
-                                        <i data-lucide="map-pin" class="w-5 h-5"></i>
-                                </div>
-
-                                 <div class="min-w-0">
-                                        <p class="text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-500 mb-1">Current Location</p>
-
-                                        <h3 class="text-sm sm:text-base font-semibold text-zinc-100">Bengaluru, India</h3>
-
-            <div class="flex items-center gap-2 mt-1.5">
-                <span class="relative flex h-2 w-2">
-                    <span class="absolute inline-flex h-full w-full
-                                 rounded-full bg-emerald-400/60 animate-ping"></span>
-                    <span class="relative inline-flex h-2 w-2
-                                 rounded-full bg-emerald-400"></span>
-                </span>
-
-                <span class="text-xs text-zinc-400">
-                    Local time · IST
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <div class="text-right shrink-0 pl-2 border-l border-zinc-800">
-        <p class="text-[10px] font-mono uppercase tracking-wider
-                  text-zinc-500 mb-1">
-            Local Time
-        </p>
-
-        <p id="blr-time"
-           class="text-sm sm:text-base font-mono font-semibold
-                  text-zinc-100 tabular-nums">
-            --:-- --
-        </p>
-
-        <p class="text-[10px] font-mono text-indigo-400 mt-1">
-            UTC +05:30
-        </p>
-    </div>
-</div>
-
-<script>
-    function updateBengaluruTime() {
-        const timeElement = document.getElementById("blr-time");
-        if (!timeElement) return;
-
-        timeElement.textContent = new Intl.DateTimeFormat("en-IN", {
-            timeZone: "Asia/Kolkata",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true
-        }).format(new Date());
-    }
-
-    updateBengaluruTime();
-    setInterval(updateBengaluruTime, 30000);
-</script>
-
+                    </div>
 
                 </div>
             </div>
@@ -1637,7 +1561,7 @@
         // Set dynamic copyright year
         document.getElementById('current-year').textContent = new Date().getFullYear();
 
-        // Live Bengaluru IST Time Updater
+        // Live Bengaluru IST Time Updater (Single-Line Format)
         function updateBengaluruTime() {
             const timeEl = document.getElementById('blr-time');
             if (!timeEl) return;
@@ -1647,16 +1571,15 @@
                     timeZone: 'Asia/Kolkata',
                     hour: '2-digit',
                     minute: '2-digit',
-                    second: '2-digit',
                     hour12: true
                 });
-                timeEl.textContent = `${formatter.format(now)} IST (UTC+5:30)`;
+                timeEl.textContent = formatter.format(now);
             } catch (e) {
-                timeEl.textContent = 'IST (UTC+5:30)';
+                timeEl.textContent = 'IST';
             }
         }
         updateBengaluruTime();
-        setInterval(updateBengaluruTime, 1000);
+        setInterval(updateBengaluruTime, 15000);
 
         // Cursor-Tracking Spotlight Effect on all .spotlight-card elements
         document.querySelectorAll('.spotlight-card').forEach(card => {
