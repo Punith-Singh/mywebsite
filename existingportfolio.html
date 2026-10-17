@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punith H Singh | Software Developer</title>
+    
+    <!-- SEO & Open Graph Meta Tags -->
+    <meta name="description" content="Portfolio of Punith H Singh, a Software Developer building scalable web apps & cloud infrastructure.">
+    <meta name="keywords" content="Punith H Singh, Software Developer, Full Stack Developer, DevOps, Cloud Infrastructure, Portfolio">
+    <meta name="author" content="Punith H Singh">
+    <meta property="og:title" content="Punith H Singh | Software Developer">
+    <meta property="og:description" content="Portfolio of Punith H Singh, a Software Developer building scalable web apps & cloud infrastructure.">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Punith H Singh | Software Developer">
+    <meta name="twitter:description" content="Portfolio of Punith H Singh, a Software Developer building scalable web apps & cloud infrastructure.">
+
+    <!-- Minimalist Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2309090b'/><text x='50%' y='54%' font-family='sans-serif' font-weight='bold' font-size='60' fill='white' dominant-baseline='middle' text-anchor='middle'>P</text></svg>">
+
+    <!-- Fonts: Inter (Professional UI) and JetBrains Mono (Tech/Code) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons (Lucide & Devicons) -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+    <script>
+        window.initLucide = function() {
+            if (window.lucide && typeof lucide.createIcons === 'function') {
+                lucide.createIcons();
+            }
+        };
+    </script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
+
+    <!-- Tailwind CSS Setup -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        zinc: {
+                            850: '#1a1a1f',
+                            900: '#131316',
+                            950: '#09090b',
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'blob': 'blob 10s infinite alternate',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '100%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #09090b;
+            color: #e4e4e7;
+        }
+        
+        /* Premium Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #09090b; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+        /* Subtle Technical Grid Background */
+        .bg-grid {
+            background-size: 30px 30px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            mask-image: linear-gradient(to bottom, black 20%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 100%);
+        }
+
+        /* Abstract Ambient Glow */
+        .ambient-glow {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .glow-blue { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #3b82f6; }
+        .glow-indigo { bottom: -10%; right: -10%; width: 60vw; height: 60vw; background: #6366f1; }
+
+        /* Scroll Reveal Utility Classes */
+        .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* Desktop Nav Link Underline Effect */
+        .nav-link { position: relative; transition: color 0.2s; }
+        .nav-link::after { 
+            content: ''; position: absolute; bottom: -4px; left: 0; 
+            width: 0; height: 1.5px; background: #6366f1; 
+            transition: width 0.3s ease; border-radius: 2px;
+        }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+        .nav-link.active { color: #fff; font-weight: 500; }
+
+        /* Timeline connector line */
+        .timeline-line {
+            position: absolute;
+            top: 24px; bottom: 0; left: 15px;
+            width: 1px;
+            background: linear-gradient(to bottom, #27272a, transparent);
+        }
+
+        /* Hide scrollbar for clean horizontal mobile lists if needed */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Preloader */
+        #preloader.loaded {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="antialiased selection:bg-indigo-500/30 selection:text-indigo-200 overflow-hidden">
+
+
+
+    <!-- Page Preloader -->
+    <div id="preloader" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#09090b]" style="transition: background-color 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div class="relative flex items-center justify-center">
+            <!-- Outer spinning ring -->
+            <div id="preloader-spinner" class="absolute w-20 h-20 border-t-2 border-r-2 border-indigo-500 rounded-full animate-spin transition-opacity duration-300"></div>
+            <!-- Inner logo -->
+            <div id="preloader-logo" class="relative w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center z-10 shadow-xl overflow-hidden" style="transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);">
+                <span class="text-lg font-bold text-zinc-400">P.</span>
+                <img src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" alt="Punith H Singh" class="absolute inset-0 w-full h-full object-cover z-10" onerror="this.style.display='none'">
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Elements -->
+    <div class="fixed inset-0 z-[-2] bg-grid"></div>
+    <div class="ambient-glow glow-blue animate-blob"></div>
+    <div class="ambient-glow glow-indigo animate-blob" style="animation-delay: -5s;"></div>
+
+    <!-- Navigation -->
+    <header class="fixed top-0 w-full z-50 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-5 md:px-8 h-16 flex justify-between items-center">
+            
+            <!-- Logo -->
+            <a href="#home" aria-label="Go to home" class="text-zinc-100 font-bold tracking-tight text-lg flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div id="nav-logo" class="relative w-8 h-8 rounded-lg overflow-hidden border border-zinc-700/50 bg-zinc-900 flex items-center justify-center shrink-0" style="transition: opacity 0.3s ease;">
+                    <span class="text-xs font-bold text-zinc-400">P.</span>
+                    <img src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" alt="Punith H Singh" loading="lazy" class="absolute inset-0 w-full h-full object-cover z-10" onerror="this.style.display='none'">
+                </div>
+                <span class="hidden sm:block">Punith H Singh</span>
+            </a>
+            
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex space-x-8 text-sm font-medium text-zinc-400">
+                <a href="#about" class="nav-link hover:text-zinc-100">About</a>
+                <a href="#skills" class="nav-link hover:text-zinc-100">Skills</a>
+                <a href="#experience" class="nav-link hover:text-zinc-100">Experience</a>
+                <a href="#projects" class="nav-link hover:text-zinc-100">Projects</a>
+            </nav>
+
+            <!-- Desktop Actions -->
+            <div class="hidden md:flex items-center space-x-5">
+                <a href="https://drive.google.com/file/d/1l3nwV6KQKycLeeCYx6StFO_Mhp6Jm5Jr/view?usp=drive_link" target="_blank" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Resume
+                </a>
+                <a href="#contact" class="text-sm font-semibold px-4 py-2 bg-white text-zinc-950 rounded-lg hover:bg-zinc-200 transition-colors shadow-sm">
+                    Let's Talk
+                </a>
+            </div>
+
+            <!-- Mobile Hamburger Button -->
+            <button id="mobile-btn" aria-label="Toggle mobile menu" aria-expanded="false" class="md:hidden text-zinc-400 hover:text-white p-1">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 w-full bg-zinc-950 border-b border-zinc-800 shadow-2xl">
+            <div class="flex flex-col px-6 py-5 space-y-5 text-base font-medium">
+                <a href="#about" class="mobile-link text-zinc-400 hover:text-white flex justify-between items-center">About <i data-lucide="chevron-right" class="w-4 h-4 opacity-50"></i></a>
+                <a href="#skills" class="mobile-link text-zinc-400 hover:text-white flex justify-between items-center">Skills <i data-lucide="chevron-right" class="w-4 h-4 opacity-50"></i></a>
+                <a href="#experience" class="mobile-link text-zinc-400 hover:text-white flex justify-between items-center">Experience <i data-lucide="chevron-right" class="w-4 h-4 opacity-50"></i></a>
+                <a href="#projects" class="mobile-link text-zinc-400 hover:text-white flex justify-between items-center">Projects <i data-lucide="chevron-right" class="w-4 h-4 opacity-50"></i></a>
+                <hr class="border-zinc-800">
+                <a href="https://drive.google.com/file/d/1l3nwV6KQKycLeeCYx6StFO_Mhp6Jm5Jr/view?usp=drive_link" target="_blank" class="mobile-link text-zinc-300 flex items-center gap-2 py-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> Download Resume
+                </a>
+                <a href="#contact" class="mobile-link block text-center py-3 w-full bg-white text-zinc-950 rounded-lg font-semibold mt-2">
+                    Get In Touch
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Floating Social Sidebars (Hidden on Mobile/Tablet) -->
+    <div class="hidden xl:flex fixed bottom-0 left-8 flex-col items-center gap-6 z-40">
+        <a href="https://github.com/Punith-Singh" aria-label="GitHub Profile" target="_blank" class="text-zinc-500 hover:text-zinc-200 hover:-translate-y-1 transition-all"><i data-lucide="github" class="w-5 h-5"></i></a>
+        <a href="https://www.linkedin.com/in/punith-h-singh" aria-label="LinkedIn Profile" target="_blank" class="text-zinc-500 hover:text-zinc-200 hover:-translate-y-1 transition-all"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+        <div class="w-px h-24 bg-gradient-to-b from-zinc-700 to-transparent mt-2"></div>
+    </div>
+    <div class="hidden xl:flex fixed bottom-0 right-8 flex-col items-center gap-6 z-40">
+        <a href="mailto:punithsingh18@gmail.com" class="text-zinc-500 hover:text-zinc-200 hover:-translate-y-1 transition-all text-[11px] font-mono tracking-widest" style="writing-mode:vertical-rl;">punithsingh18@gmail.com</a>
+        <div class="w-px h-24 bg-gradient-to-b from-zinc-700 to-transparent mt-2"></div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="max-w-5xl mx-auto px-5 md:px-8 pt-28 pb-20 space-y-32">
+
+        <!-- HERO SECTION -->
+        <section id="home" class="min-h-[75vh] flex flex-col justify-center items-start animate-fade-in-up">
+            
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 mb-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-sm">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                <span class="text-xs font-medium text-indigo-300 tracking-wide">Available for new opportunities</span>
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-zinc-100 mb-6 leading-[1.1]">
+                Hi, I'm Punith. <br>
+                <span class="text-zinc-500">I build <span id="typed-text"></span></span>
+            </h1>
+            
+            <p class="text-base sm:text-lg text-zinc-400 max-w-2xl leading-relaxed mb-10">
+                A Software Developer based in Bengaluru, specializing in scalable web applications, robust cloud infrastructure, and data-driven solutions. Currently building at <strong class="text-zinc-200 font-medium">CRED</strong>.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                <a href="#projects" class="w-full sm:w-auto text-center px-6 py-3 bg-zinc-100 text-zinc-900 text-sm font-semibold rounded-lg hover:bg-white transition-colors shadow-lg shadow-white/5">
+                    View My Work
+                </a>
+                <a href="https://github.com/Punith-Singh" target="_blank" class="w-full sm:w-auto text-center px-6 py-3 bg-zinc-900 border border-zinc-800 text-zinc-300 text-sm font-medium rounded-lg hover:bg-zinc-800 hover:text-white transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="github" class="w-4 h-4"></i> GitHub Profile
+                </a>
+            </div>
+        </section>
+
+        <!-- ABOUT SECTION -->
+        <section id="about" class="scroll-mt-28 reveal">
+            <div class="flex items-center gap-4 mb-10">
+                <h2 class="text-2xl md:text-3xl font-bold text-zinc-100 tracking-tight">About Me</h2>
+                <div class="h-px bg-zinc-800 flex-grow max-w-[200px]"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-10 text-zinc-400 leading-relaxed text-sm md:text-base">
+                
+                <!-- Bio Text -->
+                <div class="md:col-span-3 space-y-5">
+                    <p>
+                        Computer Science Engineer with a strong interest in software development, backend systems, and cloud technologies.
+                    </p>
+                    <p>
+                        I enjoy building practical solutions, improving systems, and exploring areas like GenAI, system design, DevOps, and machine learning.
+                    </p>
+                    <p>
+                        Always learning, building, and looking for better ways to solve problems.
+                    </p>
+                </div>
+                
+                <!-- Quick Info Card -->
+                <div class="md:col-span-2 bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 h-fit">
+                    <h3 class="text-zinc-100 font-semibold mb-5 text-xs uppercase tracking-widest">Quick Snapshot</h3>
+                    <ul class="space-y-5">
+                        <li class="flex items-start gap-4">
+                            <div class="p-2 bg-zinc-800/80 rounded-lg text-indigo-400 shrink-0">
+                                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-zinc-200 font-medium text-sm">Currently at CRED</p>
+                                <p class="text-[13px] text-zinc-500 mt-0.5">FinTech · Bengaluru</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="p-2 bg-zinc-800/80 rounded-lg text-indigo-400 shrink-0">
+                                <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-zinc-200 font-medium text-sm">B.E. Computer Science</p>
+                                <p class="text-[13px] text-zinc-500 mt-0.5">Engineering Graduate</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="p-2 bg-zinc-800/80 rounded-lg text-indigo-400 shrink-0">
+                                <i data-lucide="code-2" class="w-4 h-4"></i>
+                            </div>
+                            <div>
+                                <p class="text-zinc-200 font-medium text-sm">1+ Year Experience</p>
+                                <p class="text-[13px] text-zinc-500 mt-0.5">Full Stack & DevOps</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SKILLS SECTION -->
+        <section id="skills" class="scroll-mt-28 reveal">
+            <div class="flex items-center gap-4 mb-10">
+                <h2 class="text-2xl md:text-3xl font-bold text-zinc-100 tracking-tight">Technical Arsenal</h2>
+                <div class="h-px bg-zinc-800 flex-grow max-w-[200px]"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <!-- Card 1 -->
+                <div class="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-6 hover:border-zinc-700 transition-colors group" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.05">
+                    <div class="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-5 group-hover:bg-indigo-500/20 transition-colors">
+                        <i data-lucide="terminal" class="w-5 h-5 text-zinc-300 group-hover:text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-zinc-100 font-semibold mb-4 text-sm">Languages</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-python-plain group-hover/item:text-[#3776AB] text-zinc-500 text-base transition-colors"></i> Python</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-javascript-plain group-hover/item:text-[#F7DF1E] text-zinc-500 text-base transition-colors"></i> JavaScript</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-java-plain group-hover/item:text-[#ED8B00] text-zinc-500 text-base transition-colors"></i> Java</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-mysql-plain group-hover/item:text-[#4479A1] text-zinc-500 text-base transition-colors"></i> SQL</li>
+                    </ul>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-6 hover:border-zinc-700 transition-colors group" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.05">
+                    <div class="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-5 group-hover:bg-indigo-500/20 transition-colors">
+                        <i data-lucide="layout" class="w-5 h-5 text-zinc-300 group-hover:text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-zinc-100 font-semibold mb-4 text-sm">Frontend</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-react-original group-hover/item:text-[#61DAFB] text-zinc-500 text-base transition-colors"></i> React.js</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-tailwindcss-original group-hover/item:text-[#06B6D4] text-zinc-500 text-base transition-colors"></i> Tailwind CSS</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-kotlin-plain group-hover/item:text-[#7F52FF] text-zinc-500 text-base transition-colors"></i> Kotlin</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-html5-plain group-hover/item:text-[#E34F26] text-zinc-500 text-base transition-colors"></i> HTML / CSS</li>
+                    </ul>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-6 hover:border-zinc-700 transition-colors group" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.05">
+                    <div class="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-5 group-hover:bg-indigo-500/20 transition-colors">
+                        <i data-lucide="database" class="w-5 h-5 text-zinc-300 group-hover:text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-zinc-100 font-semibold mb-4 text-sm">Backend & DB</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-nodejs-plain group-hover/item:text-[#339933] text-zinc-500 text-base transition-colors"></i> Node.js</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-flask-original group-hover/item:text-white text-zinc-500 text-base transition-colors"></i> Flask</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-mongodb-plain group-hover/item:text-[#47A248] text-zinc-500 text-base transition-colors"></i> MongoDB</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-oracle-original group-hover/item:text-[#F00000] text-zinc-500 text-base transition-colors"></i> Oracle SQL</li>
+                    </ul>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-6 hover:border-zinc-700 transition-colors group" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.05">
+                    <div class="w-10 h-10 rounded-lg bg-zinc-800 flex items-center justify-center mb-5 group-hover:bg-indigo-500/20 transition-colors">
+                        <i data-lucide="cloud" class="w-5 h-5 text-zinc-300 group-hover:text-indigo-400"></i>
+                    </div>
+                    <h3 class="text-zinc-100 font-semibold mb-4 text-sm">Cloud & DevOps</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-docker-plain group-hover/item:text-[#2496ED] text-zinc-500 text-base transition-colors"></i> Docker</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-kubernetes-plain group-hover/item:text-[#326CE5] text-zinc-500 text-base transition-colors"></i> Kubernetes</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-amazonwebservices-plain-wordmark group-hover/item:text-[#FF9900] text-zinc-500 text-base transition-colors"></i> AWS</li>
+                        <li class="flex items-center gap-3 text-sm text-zinc-400 hover:text-zinc-200 transition-colors group/item"><i class="devicon-jenkins-line group-hover/item:text-[#D33833] text-zinc-500 text-base transition-colors"></i> Jenkins</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIENCE SECTION -->
+        <section id="experience" class="scroll-mt-28 reveal">
+            <div class="flex items-center gap-4 mb-12">
+                <h2 class="text-2xl md:text-3xl font-bold text-zinc-100 tracking-tight">Experience</h2>
+                <div class="h-px bg-zinc-800 flex-grow max-w-[200px]"></div>
+            </div>
+
+            <!-- Professional Timeline Container -->
+            <div class="relative pl-4 sm:pl-6 space-y-12 pb-4">
+                <div class="timeline-line"></div>
+                
+                <!-- CRED -->
+                <div class="relative group">
+                    <div class="absolute left-[-16px] sm:left-[-24px] top-1.5 h-3 w-3 rounded-full bg-zinc-900 border-2 border-indigo-500 z-10 group-hover:bg-indigo-500 transition-colors"></div>
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                        <h3 class="text-lg font-bold text-zinc-100">Currently <span class="text-zinc-500 font-medium">@ CRED</span></h3>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[13px] font-mono text-zinc-500">Feb 2025 – Present</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-zinc-500 mb-4 font-medium">Bengaluru, India</p>
+                    
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">SQL</span>
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">Postman</span>
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">FinTech APIs</span>
+                    </div>
+                </div>
+
+                <!-- Rooman Technologies -->
+                <div class="relative group">
+                    <div class="absolute left-[-16px] sm:left-[-24px] top-1.5 h-3 w-3 rounded-full bg-zinc-900 border-2 border-zinc-600 z-10 group-hover:border-zinc-400 transition-colors"></div>
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                        <h3 class="text-lg font-bold text-zinc-100">AI-DevOps Engineer Intern <span class="text-zinc-500 font-medium">@ Rooman Technologies</span></h3>
+                        <span class="text-[13px] font-mono text-zinc-500">Sep 2024 – Feb 2025</span>
+                    </div>
+                    
+                    <ul class="list-disc list-outside ml-4 mt-4 space-y-2.5 text-[14px] text-zinc-400 marker:text-zinc-600 leading-relaxed max-w-3xl">
+                        <li>Designed and deployed cloud-native applications utilizing <strong>Docker</strong> & <strong>Kubernetes</strong> on IBM Cloud, significantly improving infrastructure scalability and resource efficiency.</li>
+                        <li>Built, optimized, and maintained <strong>CI/CD pipelines</strong> using <strong>Jenkins</strong> to automate build, test, and deployment workflows.</li>
+                        <li>Managed cloud infrastructure ensuring high availability and secure access policies via <strong>AWS IAM</strong>, S3, EC2, and Elastic Beanstalk.</li>
+                    </ul>
+
+                    <div class="flex flex-wrap gap-2 mt-5">
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">Docker</span>
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">Kubernetes</span>
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">AWS</span>
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">Jenkins CI/CD</span>
+                    </div>
+                </div>
+
+                <!-- Indian Tech Keys -->
+                <div class="relative group">
+                    <div class="absolute left-[-16px] sm:left-[-24px] top-1.5 h-3 w-3 rounded-full bg-zinc-900 border-2 border-zinc-600 z-10 group-hover:border-zinc-400 transition-colors"></div>
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+                        <h3 class="text-lg font-bold text-zinc-100">Full Stack Trainee <span class="text-zinc-500 font-medium">@ Indian Tech Keys</span></h3>
+                        <span class="text-[13px] font-mono text-zinc-500">Sep 2022 – Oct 2022</span>
+                    </div>
+                    
+                    <ul class="list-disc list-outside ml-4 mt-4 space-y-2.5 text-[14px] text-zinc-400 marker:text-zinc-600 leading-relaxed max-w-3xl">
+                        <li>Developed responsive, interactive UI components using <strong>React.js</strong> to enhance client-side user experience.</li>
+                        <li>Contributed to a <strong>Node.js</strong> backend API architecture, focusing on endpoint creation and secure database integration.</li>
+                    </ul>
+
+                    <div class="flex flex-wrap gap-2 mt-5">
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">React.js</span>
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">Node.js</span>
+                        <span class="px-2.5 py-1 rounded-md bg-zinc-800/50 border border-zinc-700/50 text-[11px] font-mono text-zinc-300">REST APIs</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECTS SECTION -->
+        <section id="projects" class="scroll-mt-28 reveal">
+            <div class="flex items-center gap-4 mb-10">
+                <h2 class="text-2xl md:text-3xl font-bold text-zinc-100 tracking-tight">Featured Work</h2>
+                <div class="h-px bg-zinc-800 flex-grow max-w-[200px]"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                
+                <!-- OmniConverter -->
+                <a href="https://omniconverter-kappa.vercel.app/" target="_blank" class="block p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition-all group flex flex-col h-full" data-tilt data-tilt-max="4" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-bold text-zinc-100 flex items-center gap-3">
+                            OmniConverter
+                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700 flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> Latest
+                            </span>
+                        </h3>
+                        <i data-lucide="arrow-up-right" class="w-5 h-5 text-zinc-500 group-hover:text-zinc-200 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all"></i>
+                    </div>
+                    <p class="text-sm text-zinc-400 mb-6 leading-relaxed flex-grow">
+                        Client-side toolkit for compressing and converting media. Eliminates server costs and ensures 100% data privacy by processing files locally within the browser via modern Web APIs.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mt-auto pt-4 border-t border-zinc-800/50">
+                        <span class="text-[11px] font-mono text-zinc-400">JavaScript</span>
+                        <span class="text-[11px] font-mono text-zinc-600">•</span>
+                        <span class="text-[11px] font-mono text-zinc-400">Web APIs</span>
+                        <span class="text-[11px] font-mono text-zinc-600">•</span>
+                        <span class="text-[11px] font-mono text-zinc-400">HTML/CSS</span>
+                    </div>
+                </a>
+
+                <!-- Password Manager -->
+                <a href="https://password-manager-cduz.vercel.app/" target="_blank" class="block p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition-all group flex flex-col h-full" data-tilt data-tilt-max="4" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-bold text-zinc-100">Vault Manager</h3>
+                        <i data-lucide="arrow-up-right" class="w-5 h-5 text-zinc-500 group-hover:text-zinc-200 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all"></i>
+                    </div>
+                    <p class="text-sm text-zinc-400 mb-6 leading-relaxed flex-grow">
+                        A secure, responsive password management system. Features user authentication, end-to-end credential encryption, and data persistence via a NoSQL database.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mt-auto pt-4 border-t border-zinc-800/50">
+                        <span class="text-[11px] font-mono text-zinc-400">React.js</span>
+                        <span class="text-[11px] font-mono text-zinc-600">•</span>
+                        <span class="text-[11px] font-mono text-zinc-400">Node.js</span>
+                        <span class="text-[11px] font-mono text-zinc-600">•</span>
+                        <span class="text-[11px] font-mono text-zinc-400">MongoDB</span>
+                    </div>
+                </a>
+
+                <!-- Air Canvas -->
+                <a href="https://air-canvas-azure.vercel.app/" target="_blank" class="block p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition-all group flex flex-col h-full" data-tilt data-tilt-max="4" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-bold text-zinc-100">Air Canvas</h3>
+                        <i data-lucide="arrow-up-right" class="w-5 h-5 text-zinc-500 group-hover:text-zinc-200 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all"></i>
+                    </div>
+                    <p class="text-sm text-zinc-400 mb-6 leading-relaxed flex-grow">
+                        Real-time gesture recognition application enabling mid-air drawing. Processes video feeds with ultra-low latency using MediaPipe to translate complex hand landmarks into a touchless UI.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mt-auto pt-4 border-t border-zinc-800/50">
+                        <span class="text-[11px] font-mono text-zinc-400">Python</span>
+                        <span class="text-[11px] font-mono text-zinc-600">•</span>
+                        <span class="text-[11px] font-mono text-zinc-400">OpenCV</span>
+                        <span class="text-[11px] font-mono text-zinc-600">•</span>
+                        <span class="text-[11px] font-mono text-zinc-400">MediaPipe</span>
+                    </div>
+                </a>
+
+                <!-- Chatbot -->
+                <a href="https://github.com/Punith-Singh/chatbot" target="_blank" class="block p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition-all group flex flex-col h-full" data-tilt data-tilt-max="4" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.1">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-bold text-zinc-100 flex items-center gap-2">
+                            <i data-lucide="github" class="w-4 h-4 text-zinc-400"></i> Chatbot Architecture
+                        </h3>
+                        <i data-lucide="arrow-up-right" class="w-5 h-5 text-zinc-500 group-hover:text-zinc-200 group-hover:-translate-y-1 group-hover:translate-x-1 transition-all"></i>
+                    </div>
+                    <p class="text-sm text-zinc-400 mb-6 leading-relaxed flex-grow">
+                        Interactive chatbot system featuring a modern web UI, a robust Python/Flask backend, and Oracle SQL integration to securely manage and persist conversation histories.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mt-auto pt-4 border-t border-zinc-800/50">
+                        <span class="text-[11px] font-mono text-zinc-400">Python</span>
+                        <span class="text-[11px] font-mono text-zinc-600">•</span>
+                        <span class="text-[11px] font-mono text-zinc-400">Flask</span>
+                        <span class="text-[11px] font-mono text-zinc-600">•</span>
+                        <span class="text-[11px] font-mono text-zinc-400">Oracle SQL</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="scroll-mt-28 reveal pb-10 border-t border-zinc-800/50 pt-16">
+            <div class="max-w-xl">
+                <h2 class="text-3xl sm:text-4xl font-bold text-zinc-100 tracking-tight mb-4">Let's build something.</h2>
+                <p class="text-zinc-400 text-base leading-relaxed mb-8">
+                    I'm currently looking for new opportunities in Software Engineering and DevOps. Whether you have a question or just want to say hi, my inbox is open.
+                </p>
+                <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+                    <a href="mailto:punithsingh18@gmail.com" class="w-full sm:w-auto text-center px-6 py-3 bg-zinc-100 text-zinc-900 text-sm font-semibold rounded-lg hover:bg-white transition-colors">
+                        Say Hello
+                    </a>
+                    <a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" class="w-full sm:w-auto justify-center text-zinc-400 hover:text-zinc-100 transition-colors flex items-center gap-2 text-sm font-medium">
+                        LinkedIn <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-zinc-800/50 bg-zinc-950/80 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto px-6 py-8 flex flex-col-reverse md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <p class="text-zinc-500 text-sm font-medium">
+                    &copy; <span id="current-year">2026</span> Punith H Singh.
+                </p>
+            </div>
+            
+            <!-- Mobile Footer Links -->
+            <div class="flex xl:hidden items-center gap-6 text-zinc-500">
+                <a href="https://github.com/Punith-Singh" aria-label="GitHub Profile" target="_blank" class="hover:text-zinc-200 transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+                <a href="https://www.linkedin.com/in/punith-h-singh" aria-label="LinkedIn Profile" target="_blank" class="hover:text-zinc-200 transition-colors"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                <a href="mailto:punithsingh18@gmail.com" aria-label="Email Me" class="hover:text-zinc-200 transition-colors"><i data-lucide="mail" class="w-5 h-5"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- UI Scripts -->
+    <script>
+        // Init Icons
+        lucide.createIcons();
+
+        // Page Preloader (Flying Logo Animation)
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            const preloaderLogo = document.getElementById('preloader-logo');
+            const navLogo = document.getElementById('nav-logo');
+            const spinner = document.getElementById('preloader-spinner');
+
+            setTimeout(() => {
+                // Get exact screen coordinates
+                const navRect = navLogo.getBoundingClientRect();
+                const preRect = preloaderLogo.getBoundingClientRect();
+
+                // Calculate center-to-center difference
+                const navCenterX = navRect.left + navRect.width / 2;
+                const navCenterY = navRect.top + navRect.height / 2;
+                const preCenterX = preRect.left + preRect.width / 2;
+                const preCenterY = preRect.top + preRect.height / 2;
+
+                const deltaX = navCenterX - preCenterX;
+                const deltaY = navCenterY - preCenterY;
+                const scale = navRect.width / preRect.width;
+
+                // Hide the actual nav logo temporarily so we can fly the preloader one into its place
+                navLogo.style.opacity = '0';
+                
+                // Fade out preloader background and spinner
+                preloader.style.backgroundColor = 'transparent';
+                preloader.style.pointerEvents = 'none';
+                spinner.style.opacity = '0';
+
+                // Fly the logo!
+                preloaderLogo.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scale})`;
+                preloaderLogo.style.borderRadius = '0.5rem'; // Match nav-logo rounded-lg
+
+                // Re-enable scrolling
+                document.body.classList.remove('overflow-hidden');
+                
+                // Cleanup after flight finishes
+                setTimeout(() => {
+                    navLogo.style.opacity = '1';
+                    preloader.remove();
+                }, 700);
+            }, 600);
+        });
+
+        // Set dynamic copyright year
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+
+        // Mobile Menu Logic
+        const mobileBtn = document.getElementById('mobile-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+        
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            const isExpanded = !mobileMenu.classList.contains('hidden');
+            mobileBtn.setAttribute('aria-expanded', isExpanded);
+        });
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                mobileBtn.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // Intersection Observer for scroll animations (reveal)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    obs.unobserve(entry.target); // Run once
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Active Nav Link updating on scroll
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (window.scrollY >= sectionTop - 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+
+    </script>
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.0/vanilla-tilt.min.js"></script>
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <script>
+        // Initialize Typed.js
+        if(document.getElementById('typed-text')) {
+            new Typed('#typed-text', {
+                strings: ['reliable systems.', 'scalable web apps.', 'cloud infrastructure.'],
+                typeSpeed: 60,
+                backSpeed: 40,
+                backDelay: 2000,
+                loop: true
+            });
+        }
+    </script>
+</body>
+</html>
