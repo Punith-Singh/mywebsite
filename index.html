@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Punith H Singh</title>
+    <title>Punith H Singh | Software Engineer</title>
     
     <!-- SEO & Open Graph Meta Tags -->
     <meta name="description" content="Portfolio of Punith H Singh, a Software Developer building scalable web apps & cloud infrastructure.">
@@ -55,6 +55,7 @@
                         'shimmer': 'shimmer 2.5s linear infinite',
                         'marquee': 'marquee 28s linear infinite',
                         'spin-slow': 'spin 8s linear infinite',
+                        'float': 'float 4s ease-in-out infinite',
                     },
                     keyframes: {
                         fadeInUp: {
@@ -73,13 +74,16 @@
                         marquee: {
                             '0%': { transform: 'translateX(0%)' },
                             '100%': { transform: 'translateX(-50%)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' },
                         }
                     }
                 }
             }
         }
     </script>
-
     <style>
         :root {
             --bg-primary: #070709;
@@ -187,6 +191,23 @@
         .spotlight-card > * {
             position: relative;
             z-index: 2;
+        }
+
+        /* 3D Colored Icon Badge Effect */
+        .icon-3d {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%);
+            box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+        }
+        html.light .icon-3d {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(241, 245, 249, 0.8) 100%);
+            box-shadow: 0 8px 20px -4px rgba(15, 23, 42, 0.08), inset 0 1px 0 #ffffff, inset 0 -1px 0 rgba(15, 23, 42, 0.1);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+        }
+        .icon-3d:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 25px -4px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
         }
 
         /* Comprehensive Light Mode Architecture Overrides */
@@ -398,7 +419,6 @@
         }
     </style>
 </head>
-
 <body class="antialiased selection:bg-indigo-500/20 selection:text-indigo-600 dark:selection:bg-indigo-500/30 dark:selection:text-indigo-200 overflow-hidden">
 
     <!-- Top Scroll Progress Bar -->
@@ -522,11 +542,11 @@
 
     <!-- Floating Social Sidebars (Hidden on Mobile/Tablet) -->
     <div class="hidden xl:flex fixed bottom-0 left-8 flex-col items-center gap-5 z-40">
-        <a href="https://github.com/Punith-Singh" aria-label="GitHub Profile" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-zinc-900/80 hover:-translate-y-1 transition-all" title="GitHub">
-            <i data-lucide="github" class="w-5 h-5"></i>
+        <a href="https://github.com/Punith-Singh" aria-label="GitHub Profile" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl icon-3d text-zinc-400 hover:text-zinc-100 hover:-translate-y-1 transition-all" title="GitHub">
+            <i data-lucide="github" class="w-5 h-5 text-indigo-400"></i>
         </a>
-        <a href="https://www.linkedin.com/in/punith-h-singh" aria-label="LinkedIn Profile" target="_blank" rel="noopener noreferrer" class="p-2 rounded-lg text-zinc-500 hover:text-zinc-100 hover:bg-zinc-900/80 hover:-translate-y-1 transition-all" title="LinkedIn">
-            <i data-lucide="linkedin" class="w-5 h-5"></i>
+        <a href="https://www.linkedin.com/in/punith-h-singh" aria-label="LinkedIn Profile" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl icon-3d text-zinc-400 hover:text-zinc-100 hover:-translate-y-1 transition-all" title="LinkedIn">
+            <i data-lucide="linkedin" class="w-5 h-5 text-cyan-400"></i>
         </a>
         <div class="w-px h-24 bg-gradient-to-b from-zinc-700 to-transparent mt-1"></div>
     </div>
@@ -601,7 +621,6 @@
 
                 <!-- Right Column: Interactive Developer Console Card -->
                 <div class="lg:col-span-5 w-full relative group">
-                    <!-- Eye-Catching Glowing Aura Behind Console -->
                     <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500/25 via-violet-500/20 to-cyan-500/25 rounded-3xl blur-xl opacity-70 group-hover:opacity-100 transition duration-500 pointer-events-none"></div>
                     <div class="spotlight-card rounded-2xl border border-zinc-700/80 shadow-2xl shadow-black/80 overflow-hidden relative">
                         <!-- Window Titlebar -->
@@ -684,27 +703,27 @@
             <!-- Eye-Catching Infinite Tech Stack Ticker -->
             <div class="mt-16 pt-8 border-t border-zinc-800/50 marquee-mask overflow-hidden">
                 <div class="flex items-center gap-10 w-max animate-marquee hover:[animation-play-state:paused] text-xs font-mono text-zinc-400">
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-python-plain text-[#3776AB]"></i> Python</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-javascript-plain text-[#F7DF1E]"></i> JavaScript ES6+</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-react-original text-[#61DAFB]"></i> React.js</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-nodejs-plain text-[#339933]"></i> Node.js</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-docker-plain text-[#2496ED]"></i> Docker</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-kubernetes-plain text-[#326CE5]"></i> Kubernetes</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-amazonwebservices-plain-wordmark text-[#FF9900]"></i> AWS Cloud</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-jenkins-line text-[#D33833]"></i> Jenkins CI/CD</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-mongodb-plain text-[#47A248]"></i> MongoDB</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-mysql-plain text-[#4479A1]"></i> SQL & FinTech APIs</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-python-plain text-[#3776AB] text-base"></i> Python</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-javascript-plain text-[#F7DF1E] text-base"></i> JavaScript ES6+</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-react-original text-[#61DAFB] text-base"></i> React.js</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-nodejs-plain text-[#339933] text-base"></i> Node.js</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-docker-plain text-[#2496ED] text-base"></i> Docker</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-kubernetes-plain text-[#326CE5] text-base"></i> Kubernetes</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-amazonwebservices-plain-wordmark text-[#FF9900] text-base"></i> AWS Cloud</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-jenkins-line text-[#D33833] text-base"></i> Jenkins CI/CD</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-mongodb-plain text-[#47A248] text-base"></i> MongoDB</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-mysql-plain text-[#4479A1] text-base"></i> SQL & FinTech APIs</span>
                     <!-- Duplicated set for seamless loop -->
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-python-plain text-[#3776AB]"></i> Python</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-javascript-plain text-[#F7DF1E]"></i> JavaScript ES6+</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-react-original text-[#61DAFB]"></i> React.js</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-nodejs-plain text-[#339933]"></i> Node.js</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-docker-plain text-[#2496ED]"></i> Docker</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-kubernetes-plain text-[#326CE5]"></i> Kubernetes</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-amazonwebservices-plain-wordmark text-[#FF9900]"></i> AWS Cloud</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-jenkins-line text-[#D33833]"></i> Jenkins CI/CD</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-mongodb-plain text-[#47A248]"></i> MongoDB</span>
-                    <span class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800"><i class="devicon-mysql-plain text-[#4479A1]"></i> SQL & FinTech APIs</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-python-plain text-[#3776AB] text-base"></i> Python</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-javascript-plain text-[#F7DF1E] text-base"></i> JavaScript ES6+</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-react-original text-[#61DAFB] text-base"></i> React.js</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-nodejs-plain text-[#339933] text-base"></i> Node.js</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-docker-plain text-[#2496ED] text-base"></i> Docker</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-kubernetes-plain text-[#326CE5] text-base"></i> Kubernetes</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-amazonwebservices-plain-wordmark text-[#FF9900] text-base"></i> AWS Cloud</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-jenkins-line text-[#D33833] text-base"></i> Jenkins CI/CD</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-mongodb-plain text-[#47A248] text-base"></i> MongoDB</span>
+                    <span class="flex items-center gap-2 px-3.5 py-2 rounded-xl icon-3d"><i class="devicon-mysql-plain text-[#4479A1] text-base"></i> SQL & FinTech APIs</span>
                 </div>
             </div>
         </section>
@@ -741,14 +760,14 @@
                     </div>
 
                     <div class="mt-8 pt-5 border-t border-zinc-800/70 flex flex-wrap items-center gap-3">
-                        <span class="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 flex items-center gap-1.5">
-                            <i data-lucide="layers" class="w-3.5 h-3.5 text-indigo-400"></i> Scalable Systems
+                        <span class="px-3.5 py-1.5 rounded-xl icon-3d text-xs text-zinc-300 flex items-center gap-2">
+                            <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i> Scalable Systems
                         </span>
-                        <span class="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 flex items-center gap-1.5">
-                            <i data-lucide="cloud-cog" class="w-3.5 h-3.5 text-cyan-400"></i> CI/CD Automation
+                        <span class="px-3.5 py-1.5 rounded-xl icon-3d text-xs text-zinc-300 flex items-center gap-2">
+                            <i data-lucide="cloud-cog" class="w-4 h-4 text-cyan-400"></i> CI/CD Automation
                         </span>
-                        <span class="px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-zinc-300 flex items-center gap-1.5">
-                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i> FinTech APIs
+                        <span class="px-3.5 py-1.5 rounded-xl icon-3d text-xs text-zinc-300 flex items-center gap-2">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> FinTech APIs
                         </span>
                     </div>
                 </div>
@@ -764,7 +783,7 @@
                         </h3>
                         <ul class="space-y-4">
                             <li class="flex items-start gap-4 p-2.5 rounded-xl hover:bg-zinc-800/40 transition-colors">
-                                <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400 shrink-0">
+                                <div class="p-3 icon-3d rounded-xl text-indigo-400 shrink-0">
                                     <i data-lucide="briefcase" class="w-4 h-4"></i>
                                 </div>
                                 <div>
@@ -773,7 +792,7 @@
                                 </div>
                             </li>
                             <li class="flex items-start gap-4 p-2.5 rounded-xl hover:bg-zinc-800/40 transition-colors">
-                                <div class="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400 shrink-0">
+                                <div class="p-3 icon-3d rounded-xl text-indigo-400 shrink-0">
                                     <i data-lucide="graduation-cap" class="w-4 h-4"></i>
                                 </div>
                                 <div>
@@ -787,7 +806,7 @@
                     <!-- Live Current Location & Timezone Card (Single-Line Aligned) -->
                     <div class="spotlight-card border border-zinc-800/80 rounded-2xl px-5 py-4 bg-zinc-950/60 flex items-center justify-between gap-3">
                         <div class="flex items-center gap-3.5 min-w-0">
-                            <div class="relative flex items-center justify-center w-11 h-11 shrink-0 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                            <div class="relative flex items-center justify-center w-12 h-12 shrink-0 rounded-xl icon-3d text-indigo-400">
                                 <i data-lucide="map-pin" class="w-5 h-5"></i>
                                 <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -826,8 +845,8 @@
                 <!-- Card 1: Languages -->
                 <div class="spotlight-card border border-zinc-800/80 rounded-2xl p-6 hover:border-indigo-500/40 transition-all group" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.06">
                     <div class="flex items-center justify-between mb-6">
-                        <div class="w-10 h-10 rounded-xl bg-zinc-800/90 border border-zinc-700/60 flex items-center justify-center group-hover:bg-indigo-500/20 group-hover:border-indigo-500/40 transition-colors">
-                            <i data-lucide="terminal" class="w-5 h-5 text-zinc-300 group-hover:text-indigo-400"></i>
+                        <div class="w-12 h-12 rounded-2xl icon-3d flex items-center justify-center group-hover:scale-105 transition-transform">
+                            <i data-lucide="terminal" class="w-6 h-6 text-indigo-400"></i>
                         </div>
                         <span class="text-[11px] font-mono text-zinc-500">01 / CORE</span>
                     </div>
@@ -856,8 +875,8 @@
                 <!-- Card 2: Frontend -->
                 <div class="spotlight-card border border-zinc-800/80 rounded-2xl p-6 hover:border-indigo-500/40 transition-all group" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.06">
                     <div class="flex items-center justify-between mb-6">
-                        <div class="w-10 h-10 rounded-xl bg-zinc-800/90 border border-zinc-700/60 flex items-center justify-center group-hover:bg-indigo-500/20 group-hover:border-indigo-500/40 transition-colors">
-                            <i data-lucide="layout" class="w-5 h-5 text-zinc-300 group-hover:text-indigo-400"></i>
+                        <div class="w-12 h-12 rounded-2xl icon-3d flex items-center justify-center group-hover:scale-105 transition-transform">
+                            <i data-lucide="layout" class="w-6 h-6 text-cyan-400"></i>
                         </div>
                         <span class="text-[11px] font-mono text-zinc-500">02 / UI</span>
                     </div>
@@ -886,8 +905,8 @@
                 <!-- Card 3: Backend & DB -->
                 <div class="spotlight-card border border-zinc-800/80 rounded-2xl p-6 hover:border-indigo-500/40 transition-all group" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.06">
                     <div class="flex items-center justify-between mb-6">
-                        <div class="w-10 h-10 rounded-xl bg-zinc-800/90 border border-zinc-700/60 flex items-center justify-center group-hover:bg-indigo-500/20 group-hover:border-indigo-500/40 transition-colors">
-                            <i data-lucide="database" class="w-5 h-5 text-zinc-300 group-hover:text-indigo-400"></i>
+                        <div class="w-12 h-12 rounded-2xl icon-3d flex items-center justify-center group-hover:scale-105 transition-transform">
+                            <i data-lucide="database" class="w-6 h-6 text-emerald-400"></i>
                         </div>
                         <span class="text-[11px] font-mono text-zinc-500">03 / DATA</span>
                     </div>
@@ -916,8 +935,8 @@
                 <!-- Card 4: Cloud & DevOps -->
                 <div class="spotlight-card border border-zinc-800/80 rounded-2xl p-6 hover:border-indigo-500/40 transition-all group" data-tilt data-tilt-max="5" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.06">
                     <div class="flex items-center justify-between mb-6">
-                        <div class="w-10 h-10 rounded-xl bg-zinc-800/90 border border-zinc-700/60 flex items-center justify-center group-hover:bg-indigo-500/20 group-hover:border-indigo-500/40 transition-colors">
-                            <i data-lucide="cloud" class="w-5 h-5 text-zinc-300 group-hover:text-indigo-400"></i>
+                        <div class="w-12 h-12 rounded-2xl icon-3d flex items-center justify-center group-hover:scale-105 transition-transform">
+                            <i data-lucide="cloud" class="w-6 h-6 text-amber-400"></i>
                         </div>
                         <span class="text-[11px] font-mono text-zinc-500">04 / INFRA</span>
                     </div>
@@ -1097,8 +1116,8 @@
                         <!-- Compact Top Bar -->
                         <div class="flex items-start justify-between gap-3 mb-3.5">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0 group-hover:scale-105 transition-transform">
-                                    <i data-lucide="zap" class="w-4 h-4"></i>
+                                <div class="w-11 h-11 rounded-2xl icon-3d flex items-center justify-center text-indigo-400 shrink-0 group-hover:scale-105 transition-transform">
+                                    <i data-lucide="zap" class="w-5 h-5"></i>
                                 </div>
                                 <div>
                                     <div class="flex items-center gap-2">
@@ -1142,8 +1161,8 @@
                     <div>
                         <div class="flex items-start justify-between gap-3 mb-3.5">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
-                                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                <div class="w-11 h-11 rounded-2xl icon-3d flex items-center justify-center text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
+                                    <i data-lucide="shield-check" class="w-5 h-5"></i>
                                 </div>
                                 <div>
                                     <h3 class="text-base font-bold text-zinc-100 group-hover:text-emerald-300 transition-colors leading-tight">Vault Manager</h3>
@@ -1181,8 +1200,8 @@
                     <div>
                         <div class="flex items-start justify-between gap-3 mb-3.5">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0 group-hover:scale-105 transition-transform">
-                                    <i data-lucide="scan-face" class="w-4 h-4"></i>
+                                <div class="w-11 h-11 rounded-2xl icon-3d flex items-center justify-center text-violet-400 shrink-0 group-hover:scale-105 transition-transform">
+                                    <i data-lucide="scan-face" class="w-5 h-5"></i>
                                 </div>
                                 <div>
                                     <h3 class="text-base font-bold text-zinc-100 group-hover:text-violet-300 transition-colors leading-tight">Air Canvas</h3>
@@ -1220,8 +1239,8 @@
                     <div>
                         <div class="flex items-start justify-between gap-3 mb-3.5">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
-                                    <i data-lucide="bot" class="w-4 h-4"></i>
+                                <div class="w-11 h-11 rounded-2xl icon-3d flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
+                                    <i data-lucide="bot" class="w-5 h-5"></i>
                                 </div>
                                 <div>
                                     <h3 class="text-base font-bold text-zinc-100 group-hover:text-amber-300 transition-colors leading-tight">Chatbot Engine</h3>
@@ -1259,8 +1278,8 @@
                     <div>
                         <div class="flex items-start justify-between gap-3 mb-3.5">
                             <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-xl bg-zinc-800/90 border border-zinc-700/70 flex items-center justify-center text-zinc-300 group-hover:text-indigo-400 shrink-0 transition-colors">
-                                    <i data-lucide="git-branch-plus" class="w-4 h-4"></i>
+                                <div class="w-11 h-11 rounded-2xl icon-3d flex items-center justify-center text-indigo-400 shrink-0 group-hover:scale-105 transition-transform">
+                                    <i data-lucide="git-branch-plus" class="w-5 h-5"></i>
                                 </div>
                                 <div>
                                     <h3 class="text-base font-bold text-zinc-200 group-hover:text-indigo-300 transition-colors leading-tight">More in the Lab</h3>
