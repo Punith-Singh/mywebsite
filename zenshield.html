@@ -11,9 +11,15 @@
 <section class="section" id="features"><div class="section-label">01 / THE FEATURES</div><h2>Focus, on your terms.</h2><p class="intro">Whether you’re working, studying or taking time for yourself, ZenShield gives you ways to manage the notifications that pull your attention away.</p><div class="grid"><article class="card"><span class="number">01 / FOCUS</span><h3>Block distractions</h3><p>Start a focus session to filter notifications while you concentrate.</p></article><article class="card"><span class="number">02 / SCHEDULE</span><h3>Build a routine</h3><p>Set custom time ranges and schedules for the times you need to focus.</p></article><article class="card"><span class="number">03 / CONTROL</span><h3>Choose your apps</h3><p>Control which apps are blocked and allow important notifications through.</p></article><article class="card"><span class="number">04 / ACTIVITY</span><h3>See your activity</h3><p>Keep track of blocked notifications and review your focus activity.</p></article><article class="card"><span class="number">05 / FILTERS</span><h3>Refine your filters</h3><p>Use keyword filters to help manage unwanted notification content.</p></article><article class="card"><span class="number">06 / ANDROID</span><h3>Made for Android</h3><p>Built with Kotlin and Jetpack Compose for a native Android experience.</p></article></div></section>
 <section class="section"><div class="launch"><div><div class="section-label">02 / WHAT’S NEXT</div><h2>Coming soon to Google Play</h2><p>ZenShield is in development. A Play Store link will be added when it’s available.</p></div><span class="badge">✦ &nbsp; COMING SOON</span></div><div class="tech" aria-label="Technologies"><span class="chip">Kotlin</span><span class="chip">Jetpack Compose</span><span class="chip">Android</span><span class="chip">NotificationListenerService</span></div></section></main>
 <footer><span>ZenShield · A project by Punith H Singh</span><a href="index.html#projects">← Back to portfolio</a></footer></div><script>
-const logoSource = document.querySelector(".logo img").src;
-const faviconSvg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="41 40 336 336"><image width="414" height="422" xlink:href="' + logoSource + '"/></svg>';
-const favicon = document.getElementById("app-favicon");
-favicon.type = "image/svg+xml";
-favicon.href = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(faviconSvg);
+const logoImage = document.querySelector(".logo img");
+function updateFavicon() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(logoImage, 41, 40, 336, 336, 0, 0, 128, 128);
+  document.getElementById("app-favicon").href = canvas.toDataURL("image/png");
+}
+if (logoImage.complete && logoImage.naturalWidth) updateFavicon();
+else logoImage.addEventListener("load", updateFavicon, { once: true });
 </script></body></html>
