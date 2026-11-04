@@ -13,6 +13,15 @@
 @media(max-width:650px){.wrap{width:calc(100% - 36px)}.nav{height:70px}.nav-links{display:none}.nav-cta{padding:9px 13px}.hero{min-height:760px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;padding-top:45px}.hero:before{inset:16% -35%;background:radial-gradient(ellipse at 50% 50%,#a99bac,#514359 35%,transparent 68%)}.hero-copy{align-self:stretch}.hero h1{font-size:clamp(54px,14vw,80px)}.hero-sub{max-width:320px}.portrait-wrap{height:390px;width:100%;margin-top:auto}.portrait-wrap:before{width:70%;top:3%}.hero-footer{bottom:15px}.hero-footer span:last-child{display:none}.section{padding:82px 0}.section-top{margin-bottom:30px}.about{grid-template-columns:1fr}.about-scene{min-height:320px;order:2}.id-card{width:240px;min-height:300px}.id-image{height:200px}.about-copy p{font-size:15px}.mini-grid{grid-template-columns:repeat(3,1fr)}.mini{padding:11px;font-size:11px}.role{grid-template-columns:1fr;gap:10px;padding:24px}.role .mono:last-child{grid-column:auto}.cards{grid-template-columns:1fr 1fr;gap:10px}.project{min-height:270px;padding:17px}.project h3{font-size:21px}.project p{font-size:12px}.contact{padding-top:85px}.contact h2{font-size:clamp(65px,17vw,110px)}.footer{margin-top:70px;gap:15px;flex-wrap:wrap}}
 @media(max-width:370px){.cards{grid-template-columns:1fr}.project{min-height:235px}.mini-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.ticker span{animation:none}.reveal{opacity:1;transform:none;transition:none}.project,.id-card{transition:none}}
+
+/* Layered portrait motion */
+.portrait-wrap{perspective:1100px;transform-style:preserve-3d;--portrait-x:0;--portrait-y:0}
+.portrait-wrap::before{animation:portrait-orbit 12s ease-in-out infinite;transform:perspective(900px) rotateX(64deg) rotateZ(-18deg);box-shadow:0 0 70px #dcc1ff42,inset 0 0 40px #c6a4ef24}
+.portrait{transform-origin:50% 75%;transform:perspective(1100px) rotateY(calc(var(--portrait-x) * 5deg)) rotateX(calc(var(--portrait-y) * -3deg)) translate3d(calc(var(--portrait-x) * 12px),calc(var(--portrait-y) * 7px),35px) scale(1.035);transition:transform .24s ease-out;animation:portrait-float 6s ease-in-out infinite}
+.portrait-fallback{transform:translate3d(calc(var(--portrait-x) * -12px),calc(var(--portrait-y) * -8px),-35px);transition:transform .3s ease-out}
+@keyframes portrait-float{0%,100%{translate:0 0}50%{translate:0 -10px}}
+@keyframes portrait-orbit{0%,100%{rotate:0deg;opacity:.65}50%{rotate:10deg;opacity:1}}
+@media(prefers-reduced-motion:reduce){.portrait,.portrait-wrap::before{animation:none!important;transition:none!important;transform:none!important}.portrait-fallback{transition:none!important;transform:none!important}}
 </style></head><body>
 <header class="wrap nav" id="top"><a href="#top" class="wordmark" aria-label="Punith home">Punith<span>.</span></a><nav class="nav-links" aria-label="Main navigation"><a href="#about">About</a><a href="#experience">Experience</a><a href="#work">Projects</a><a href="#skills">Skills</a><a href="#contact">Contact</a></nav><a class="nav-cta" href="index.html">Current portfolio ↗</a></header>
 <main><section class="hero wrap" aria-label="Introduction"><div class="hero-copy"><div class="mono eyebrow">Hello, I’m Punith H Singh</div><h1>Curious<br><span>by design.</span></h1><p class="hero-sub">Working in operations analytics. Building practical software. Always learning.</p></div><div class="portrait-wrap"><span class="portrait-fallback" aria-hidden="true">P.</span><img class="portrait" src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" referrerpolicy="no-referrer" alt="Punith H Singh" onerror="this.hidden=true"></div><div class="hero-right"><div class="mono">Developer / Problem solver<br>Bengaluru, India</div><p>From investigating real-world issues to building experiences that make everyday life a little better.</p><div class="hero-actions"><a class="pill light" href="#work">Explore work ↗</a><a class="pill" href="#contact">Get in touch</a></div></div><div class="hero-footer mono"><a href="#about">↓ &nbsp; Scroll to explore</a><span>Operations · Software · Cloud</span></div></section>
@@ -29,4 +38,16 @@
 <section class="contact" id="contact"><div class="wrap"><div class="section-label mono">05 / Let’s connect</div><p>Have an opportunity, an idea, or just want to say hello?</p><h2>PUNITH<span style="color:#c5a9e2">.</span></h2><a class="email" href="mailto:punithsingh18@gmail.com">Let’s talk ↗</a><div class="footer mono"><div>© 2026 Punith H Singh<br>Bengaluru, India</div><div><a href="https://github.com/Punith-Singh" target="_blank" rel="noopener noreferrer">GitHub ↗</a> &nbsp; <a href="https://www.linkedin.com/in/punith-h-singh" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><br><a href="#top">Back to top ↑</a></div></div></div></section></main>
 <script>
 const revealItems=document.querySelectorAll('.reveal');if('IntersectionObserver' in window&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.08});revealItems.forEach(el=>observer.observe(el));}else revealItems.forEach(el=>el.classList.add('visible'));
+
+const portraitScene=document.querySelector('.portrait-wrap');
+const heroSection=document.querySelector('.hero');
+const motionAllowed=window.matchMedia('(prefers-reduced-motion: reduce)');
+if(portraitScene&&heroSection&&!motionAllowed.matches&&window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+  heroSection.addEventListener('pointermove',event=>{
+    const box=heroSection.getBoundingClientRect();
+    portraitScene.style.setProperty('--portrait-x',((event.clientX-box.left)/box.width*2-1).toFixed(3));
+    portraitScene.style.setProperty('--portrait-y',((event.clientY-box.top)/box.height*2-1).toFixed(3));
+  },{passive:true});
+  heroSection.addEventListener('pointerleave',()=>{portraitScene.style.setProperty('--portrait-x','0');portraitScene.style.setProperty('--portrait-y','0');});
+}
 </script></body></html>
