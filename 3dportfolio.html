@@ -22,9 +22,13 @@
 @keyframes portrait-float{0%,100%{translate:0 0}50%{translate:0 -10px}}
 @keyframes portrait-orbit{0%,100%{rotate:0deg;opacity:.65}50%{rotate:10deg;opacity:1}}
 @media(prefers-reduced-motion:reduce){.portrait,.portrait-wrap::before{animation:none!important;transition:none!important;transform:none!important}.portrait-fallback{transition:none!important;transform:none!important}}
+
+#avatar-stage{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:visible;mask-image:linear-gradient(#000 82%,transparent 100%);-webkit-mask-image:linear-gradient(#000 82%,transparent 100%)}
+#avatar-stage[hidden]{display:none}#avatar-stage canvas{display:block;width:100%;height:100%}
+.portrait-wrap.avatar-ready>.portrait{display:none}
 </style></head><body>
 <header class="wrap nav" id="top"><a href="#top" class="wordmark" aria-label="Punith home">Punith<span>.</span></a><nav class="nav-links" aria-label="Main navigation"><a href="#about">About</a><a href="#experience">Experience</a><a href="#work">Projects</a><a href="#skills">Skills</a><a href="#contact">Contact</a></nav><a class="nav-cta" href="index.html">Current portfolio ↗</a></header>
-<main><section class="hero wrap" aria-label="Introduction"><div class="hero-copy"><div class="mono eyebrow">Hello, I’m Punith H Singh</div><h1>Curious<br><span>by design.</span></h1><p class="hero-sub">Working in operations analytics. Building practical software. Always learning.</p></div><div class="portrait-wrap"><span class="portrait-fallback" aria-hidden="true">P.</span><img class="portrait" src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" referrerpolicy="no-referrer" alt="Punith H Singh" onerror="this.hidden=true"></div><div class="hero-right"><div class="mono">Developer / Problem solver<br>Bengaluru, India</div><p>From investigating real-world issues to building experiences that make everyday life a little better.</p><div class="hero-actions"><a class="pill light" href="#work">Explore work ↗</a><a class="pill" href="#contact">Get in touch</a></div></div><div class="hero-footer mono"><a href="#about">↓ &nbsp; Scroll to explore</a><span>Operations · Software · Cloud</span></div></section>
+<main><section class="hero wrap" aria-label="Introduction"><div class="hero-copy"><div class="mono eyebrow">Hello, I’m Punith H Singh</div><h1>Curious<br><span>by design.</span></h1><p class="hero-sub">Working in operations analytics. Building practical software. Always learning.</p></div><div class="portrait-wrap"><div id="avatar-stage" role="img" aria-label="Animated stylized 3D avatar of Punith" hidden></div><span class="portrait-fallback" aria-hidden="true">P.</span><img class="portrait" src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" referrerpolicy="no-referrer" alt="Punith H Singh" onerror="this.hidden=true"></div><div class="hero-right"><div class="mono">Developer / Problem solver<br>Bengaluru, India</div><p>From investigating real-world issues to building experiences that make everyday life a little better.</p><div class="hero-actions"><a class="pill light" href="#work">Explore work ↗</a><a class="pill" href="#contact">Get in touch</a></div></div><div class="hero-footer mono"><a href="#about">↓ &nbsp; Scroll to explore</a><span>Operations · Software · Cloud</span></div></section>
 <div class="ticker mono" aria-hidden="true"><span>PYTHON <b>✳</b> SQL <b>✳</b> API DEBUGGING <b>✳</b> KOTLIN <b>✳</b> CLOUD <b>✳</b> BUILDING IN PUBLIC <b>✳</b> PYTHON <b>✳</b> SQL <b>✳</b> API DEBUGGING <b>✳</b> KOTLIN <b>✳</b> CLOUD <b>✳</b> BUILDING IN PUBLIC <b>✳</b></span></div>
 <section class="section wrap" id="about"><div class="about"><div class="about-scene reveal"><div class="id-card"><div class="id-image"><img src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" referrerpolicy="no-referrer" alt="Portrait of Punith H Singh" loading="lazy" onerror="this.hidden=true"></div><div class="id-bottom"><div><div class="mono status">● Open to opportunities</div><strong>Punith H Singh</strong></div><span class="mono">BLR / IN</span></div></div></div><div class="about-copy reveal"><div class="section-label mono">01 / About me</div><h2 class="title">Hello, I’m<br>Punith Singh.</h2><p>I work in operations analytics at CRED, where I use SQL, logs and API testing to investigate issues and support campaigns. Outside work, I enjoy building applications and exploring software development, cloud and DevOps.</p><div class="mini-grid"><div class="mini">Technical ops<span>SQL · APIs · Logs</span></div><div class="mini">Development<span>Python · Kotlin · Web</span></div><div class="mini">Cloud &amp; DevOps<span>Docker · AWS · Jenkins</span></div></div></div></div></section>
 <section class="section wrap" id="experience"><div class="section-top reveal"><div><div class="section-label mono">02 / The journey</div><h2 class="title">Experience<br>in practice.</h2></div><span class="mono muted">Learning through<br>building &amp; doing ↘</span></div><div class="roles reveal"><article class="role"><div><h3>Operations Analytics</h3><span class="mono">CRED · Consultant</span></div><p>Investigate application and user issues with SQL, Databricks, logs and API testing. Support campaign configuration and troubleshooting.</p><span class="mono">Feb 2025 — Present<br>Bengaluru, India</span></article><article class="role"><div><h3>AI-DevOps Engineer</h3><span class="mono">Rooman Technologies · Intern</span></div><p>Worked with Docker, Kubernetes and Jenkins, with exposure to AWS and IBM Cloud.</p><span class="mono">Sep 2024 — Feb 2025</span></article><article class="role"><div><h3>Full Stack Trainee</h3><span class="mono">Indian Tech Keys</span></div><p>Developed responsive React components and contributed to a Node.js backend.</p><span class="mono">Sep 2022 — Oct 2022</span></article></div></section>
@@ -50,4 +54,68 @@ if(portraitScene&&heroSection&&!motionAllowed.matches&&window.matchMedia('(hover
   },{passive:true});
   heroSection.addEventListener('pointerleave',()=>{portraitScene.style.setProperty('--portrait-x','0');portraitScene.style.setProperty('--portrait-y','0');});
 }
-</script></body></html>
+</script>
+<script type="module">
+(async()=>{
+ const stage=document.getElementById('avatar-stage');
+ const wrap=document.querySelector('.portrait-wrap');
+ if(!stage || !wrap) return;
+ let renderer;
+ try {
+  const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
+  renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+  renderer.outputColorSpace=THREE.SRGBColorSpace;
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(30,1,.1,100); camera.position.set(0,1.15,9.6);
+  scene.add(new THREE.HemisphereLight(0xe8dbff,0x54424d,2));
+  const key=new THREE.DirectionalLight(0xffe4c8,2.8);key.position.set(-3,5,5);scene.add(key);
+  const rim=new THREE.DirectionalLight(0xb88bff,3.2);rim.position.set(4,2,-2);scene.add(rim);
+  const avatar=new THREE.Group();scene.add(avatar);
+  const mat=(c,rough=.72)=>new THREE.MeshStandardMaterial({color:c,roughness:rough,metalness:.02});
+  const skin=mat(0xa86e4f),skinLight=mat(0xbb805c),hair=mat(0x171317),hairHighlight=mat(0x282027),shirt=mat(0x15171f),shirtEdge=mat(0x292c38),white=mat(0xf5eade),eyes=mat(0x181318,.4),brow=mat(0x23181a),lip=mat(0x704736);
+  function sphere(parent,material,pos,scale){const obj=new THREE.Mesh(new THREE.SphereGeometry(1,32,24),material);obj.position.set(...pos);obj.scale.set(...scale);parent.add(obj);return obj}
+  function bar(parent,material,from,to,r1,r2){const a=new THREE.Vector3(...from),b=new THREE.Vector3(...to),diff=b.clone().sub(a);const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,diff.length(),20),material);mesh.position.copy(a).add(b).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),diff.normalize());parent.add(mesh);return mesh}
+  // A stylized sculpted bust: shoulders, collar, neck and head.
+  sphere(avatar,shirt,[0,-.55,0],[1.75,1.2,.64]);
+  sphere(avatar,shirtEdge,[0,.02,.08],[1.05,.40,.55]);
+  bar(avatar,skin,[0,.22,0],[0,1.05,0],.36,.40);
+  const head=new THREE.Group();head.position.set(0,1.45,0);avatar.add(head);
+  sphere(head,skin,[0,.10,0],[.80,1.04,.65]);
+  sphere(head,skin,[-.78,.03,0],[.16,.27,.14]);sphere(head,skin,[.78,.03,0],[.16,.27,.14]);
+  // Hair cap and sculpted locks.
+  sphere(head,hair,[0,.83,-.07],[.82,.41,.66]);
+  sphere(head,hair,[-.68,.52,-.04],[.15,.45,.53]);sphere(head,hair,[.68,.52,-.04],[.15,.45,.53]);
+  for(let i=0;i<7;i++){let x=-.58+i*.19;sphere(head,i%2?hairHighlight:hair,[x,.97+(.11-Math.abs(x)*.12),.24],[.18,.16,.40]);}
+  // Bearded jaw, cheeks, moustache and face.
+  sphere(head,hair,[0,-.52,.23],[.72,.52,.48]);
+  sphere(head,skinLight,[0,-.17,.50],[.62,.51,.25]);
+  sphere(head,hair,[-.42,-.37,.52],[.21,.30,.11]);sphere(head,hair,[.42,-.37,.52],[.21,.30,.11]);
+  sphere(head,hair,[-.17,-.36,.71],[.21,.085,.08]);sphere(head,hair,[.17,-.36,.71],[.21,.085,.08]);
+  sphere(head,lip,[0,-.49,.695],[.24,.035,.025]);
+  sphere(head,skinLight,[0,-.08,.72],[.13,.22,.13]);
+  for(const x of [-.31,.31]){sphere(head,white,[x,.18,.57],[.17,.09,.065]);sphere(head,eyes,[x,.18,.625],[.073,.073,.033]);sphere(head,brow,[x,.34,.59],[.21,.055,.065]);sphere(head,white,[x-.018,.205,.657],[.018,.018,.012]);}
+  // Jacket lapels add a little visual depth.
+  bar(avatar,shirtEdge,[-.64,.27,.5],[-.23,-.34,.61],.12,.16);bar(avatar,shirtEdge,[.64,.27,.5],[.23,-.34,.61],.12,.16);
+  const haloGeo=new THREE.TorusGeometry(1.55,.009,8,140);
+  const halo=new THREE.Mesh(haloGeo,new THREE.MeshBasicMaterial({color:0xd6b4ff,transparent:true,opacity:.42}));halo.position.set(0,.75,-.8);scene.add(halo);
+  const halo2=new THREE.Mesh(new THREE.TorusGeometry(1.74,.004,8,140),new THREE.MeshBasicMaterial({color:0xbba4d8,transparent:true,opacity:.22}));halo2.position.set(0,.75,-.9);scene.add(halo2);
+  avatar.position.y=-.2;
+  stage.appendChild(renderer.domElement);stage.hidden=false;
+  function resize(){let w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.position.z=w<400?10.7:9.6;camera.updateProjectionMatrix();}
+  resize();const resizeObserver=new ResizeObserver(resize);resizeObserver.observe(stage);
+  renderer.render(scene,camera);wrap.classList.add('avatar-ready');
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)');
+  let mx=0,my=0,raf=0,visible=true;
+  const hero=document.querySelector('.hero');
+  if(hero)hero.addEventListener('pointermove',e=>{if(reduce.matches||e.pointerType==='touch')return;const b=hero.getBoundingClientRect();mx=((e.clientX-b.left)/b.width-.5)*.45;my=((e.clientY-b.top)/b.height-.5)*.22},{passive:true});
+  if(hero)hero.addEventListener('pointerleave',()=>{mx=0;my=0});
+  function draw(t){if(!visible)return;const seconds=t*.001;const motion=reduce.matches?0:1;avatar.rotation.y+=(mx+Math.sin(seconds*.65)*.09*motion-avatar.rotation.y)*.06;avatar.rotation.x+=(-my+Math.sin(seconds*.45)*.025*motion-avatar.rotation.x)*.06;avatar.position.y=-.2+Math.sin(seconds*.8)*.035*motion;halo.rotation.z=seconds*.045*motion;halo2.rotation.z=-seconds*.035*motion;renderer.render(scene,camera);raf=requestAnimationFrame(draw)}
+  function renderOnce(){renderer.render(scene,camera)}
+  if(!reduce.matches)raf=requestAnimationFrame(draw);
+  reduce.addEventListener('change',()=>{cancelAnimationFrame(raf);if(reduce.matches){avatar.rotation.set(0,0,0);avatar.position.y=-.2;renderOnce()}else if(visible)raf=requestAnimationFrame(draw)});
+  document.addEventListener('visibilitychange',()=>{visible=!document.hidden;cancelAnimationFrame(raf);if(visible&&!reduce.matches)raf=requestAnimationFrame(draw);else if(visible)renderOnce()});
+ } catch(err) {if(renderer)renderer.dispose();stage.hidden=true;wrap.classList.remove('avatar-ready');console.warn('3D avatar unavailable; using portrait fallback.');}
+})();
+</script>
+</body></html>
