@@ -81,7 +81,7 @@ html{scroll-padding-top:82px}.nav{position:sticky!important;top:0;backdrop-filte
 @media(prefers-reduced-motion:reduce){.about-scene:before,.id-card{animation:none}}
 
 /* Visible animated glow behind the About card */
-.about-scene::before{display:block!important;z-index:0!important;inset:50% auto auto 50%;width:330px;height:330px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(236,225,255,.95) 35deg,transparent 85deg,transparent 180deg,rgba(215,198,255,.85) 220deg,transparent 270deg);filter:blur(25px);opacity:.8;animation:about-orbit 7s linear infinite;pointer-events:none}
+.about-scene::before{display:block!important;z-index:0!important;inset:50% auto auto 50%;width:460px;height:460px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(236,225,255,.95) 35deg,transparent 85deg,transparent 180deg,rgba(215,198,255,.85) 220deg,transparent 270deg);filter:blur(25px);opacity:.8;animation:about-orbit 7s linear infinite;pointer-events:none}
 .about-scene .id-card{position:relative;z-index:1}
 @keyframes about-orbit{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.about-scene::before{animation:none}}
