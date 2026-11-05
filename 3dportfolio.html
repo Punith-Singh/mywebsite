@@ -14,18 +14,39 @@
 @media(max-width:370px){.cards{grid-template-columns:1fr}.project{min-height:235px}.mini-grid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.ticker span{animation:none}.reveal{opacity:1;transform:none;transition:none}.project,.id-card{transition:none}}
 
-/* Layered portrait motion */
-.portrait-wrap{perspective:1100px;transform-style:preserve-3d;--portrait-x:0;--portrait-y:0}
-.portrait-wrap::before{animation:portrait-orbit 12s ease-in-out infinite;transform:perspective(900px) rotateX(64deg) rotateZ(-18deg);box-shadow:0 0 70px #dcc1ff42,inset 0 0 40px #c6a4ef24}
-.portrait{transform-origin:50% 75%;transform:perspective(1100px) rotateY(calc(var(--portrait-x) * 5deg)) rotateX(calc(var(--portrait-y) * -3deg)) translate3d(calc(var(--portrait-x) * 12px),calc(var(--portrait-y) * 7px),35px) scale(1.035);transition:transform .24s ease-out;animation:portrait-float 6s ease-in-out infinite}
-.portrait-fallback{transform:translate3d(calc(var(--portrait-x) * -12px),calc(var(--portrait-y) * -8px),-35px);transition:transform .3s ease-out}
-@keyframes portrait-float{0%,100%{translate:0 0}50%{translate:0 -10px}}
-@keyframes portrait-orbit{0%,100%{rotate:0deg;opacity:.65}50%{rotate:10deg;opacity:1}}
-@media(prefers-reduced-motion:reduce){.portrait,.portrait-wrap::before{animation:none!important;transition:none!important;transform:none!important}.portrait-fallback{transition:none!important;transform:none!important}}
+/* Interactive GLB portrait */
+.portrait-wrap{isolation:isolate;align-self:center;display:block;min-width:0}
+.portrait-wrap:before{pointer-events:none}
+.portrait-wrap .portrait{position:absolute;inset:0;transition:opacity .2s;pointer-events:none}
+.portrait-viewport{position:absolute;inset:0 0 95px;z-index:1;opacity:0}
+.portrait-viewport canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:pan-y}
+.portrait-wrap.is-dragging canvas{cursor:grabbing}
+.portrait-wrap[data-state="ready"] .portrait-viewport{opacity:1}
+.portrait-wrap[data-state="ready"] .portrait,.portrait-wrap[data-state="ready"] .portrait-fallback{opacity:0}
+.portrait-ui{position:absolute;bottom:84px;left:0;right:0;z-index:2;text-align:center}
+.portrait-status{color:#e0d2ed;font-size:9px;letter-spacing:.08em;margin:0 0 10px}
+.portrait-controls{display:flex;gap:6px;align-items:center;justify-content:center}
+.portrait-controls[hidden]{display:none}
+.portrait-controls button{font:11px "DM Sans",sans-serif;color:#eee6f5;background:#1b152dcc;border:1px solid #ffffff38;border-radius:24px;padding:10px 14px;min-height:40px;cursor:pointer}
+.portrait-controls button:hover{background:#d9c4f3;color:#17101b}
+.portrait-controls button[data-rotate-left],.portrait-controls button[data-rotate-right]{min-width:40px;font-size:18px;padding:5px}
+.portrait-live{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:650px){.portrait-wrap{height:425px;flex-shrink:0;margin-top:0}.portrait-viewport{inset:0 0 85px}.portrait-ui{bottom:48px}.portrait-controls button{min-height:44px}}
+@media(prefers-reduced-motion:reduce){.portrait-wrap .portrait{transition:none}}
 
 </style></head><body>
 <header class="wrap nav" id="top"><a href="#top" class="wordmark" aria-label="Punith home">Punith<span>.</span></a><nav class="nav-links" aria-label="Main navigation"><a href="#about">About</a><a href="#experience">Experience</a><a href="#work">Projects</a><a href="#skills">Skills</a><a href="#contact">Contact</a></nav><a class="nav-cta" href="index.html">Current portfolio ↗</a></header>
-<main><section class="hero wrap" aria-label="Introduction"><div class="hero-copy"><div class="mono eyebrow">Hello, I’m Punith H Singh</div><h1>Curious<br><span>by design.</span></h1><p class="hero-sub">Working in operations analytics. Building practical software. Always learning.</p></div><div class="portrait-wrap"><span class="portrait-fallback" aria-hidden="true">P.</span><img class="portrait" src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" referrerpolicy="no-referrer" alt="Punith H Singh" onerror="this.hidden=true"></div><div class="hero-right"><div class="mono">Developer / Problem solver<br>Bengaluru, India</div><p>From investigating real-world issues to building experiences that make everyday life a little better.</p><div class="hero-actions"><a class="pill light" href="#work">Explore work ↗</a><a class="pill" href="#contact">Get in touch</a></div></div><div class="hero-footer mono"><a href="#about">↓ &nbsp; Scroll to explore</a><span>Operations · Software · Cloud</span></div></section>
+<main><section class="hero wrap" aria-label="Introduction"><div class="hero-copy"><div class="mono eyebrow">Hello, I’m Punith H Singh</div><h1>Curious<br><span>by design.</span></h1><p class="hero-sub">Working in operations analytics. Building practical software. Always learning.</p></div><div class="portrait-wrap" data-state="loading" aria-label="Interactive portrait">
+<span class="portrait-fallback" aria-hidden="true">P.</span><img class="portrait" src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" referrerpolicy="no-referrer" alt="Punith H Singh" onerror="this.hidden=true">
+<div class="portrait-viewport" data-portrait-viewport></div>
+<div class="portrait-ui"><p class="portrait-status mono" data-portrait-status role="status">Loading 3D portrait…</p>
+<div class="portrait-controls" data-portrait-controls hidden>
+<button type="button" data-rotate-left aria-label="Rotate portrait left">←</button>
+<button type="button" data-reset-portrait>↺ Reset view</button>
+<button type="button" data-rotate-right aria-label="Rotate portrait right">→</button>
+</div></div><span class="portrait-live" data-portrait-live role="status" aria-live="polite"></span>
+<noscript><style>.portrait-ui{display:none}</style></noscript>
+</div><div class="hero-right"><div class="mono">Developer / Problem solver<br>Bengaluru, India</div><p>From investigating real-world issues to building experiences that make everyday life a little better.</p><div class="hero-actions"><a class="pill light" href="#work">Explore work ↗</a><a class="pill" href="#contact">Get in touch</a></div></div><div class="hero-footer mono"><a href="#about">↓ &nbsp; Scroll to explore</a><span>Operations · Software · Cloud</span></div></section>
 <div class="ticker mono" aria-hidden="true"><span>PYTHON <b>✳</b> SQL <b>✳</b> API DEBUGGING <b>✳</b> KOTLIN <b>✳</b> CLOUD <b>✳</b> BUILDING IN PUBLIC <b>✳</b> PYTHON <b>✳</b> SQL <b>✳</b> API DEBUGGING <b>✳</b> KOTLIN <b>✳</b> CLOUD <b>✳</b> BUILDING IN PUBLIC <b>✳</b></span></div>
 <section class="section wrap" id="about"><div class="about"><div class="about-scene reveal"><div class="id-card"><div class="id-image"><img src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" referrerpolicy="no-referrer" alt="Portrait of Punith H Singh" loading="lazy" onerror="this.hidden=true"></div><div class="id-bottom"><div><div class="mono status">● Open to opportunities</div><strong>Punith H Singh</strong></div><span class="mono">BLR / IN</span></div></div></div><div class="about-copy reveal"><div class="section-label mono">01 / About me</div><h2 class="title">Hello, I’m<br>Punith Singh.</h2><p>I work in operations analytics at CRED, where I use SQL, logs and API testing to investigate issues and support campaigns. Outside work, I enjoy building applications and exploring software development, cloud and DevOps.</p><div class="mini-grid"><div class="mini">Technical ops<span>SQL · APIs · Logs</span></div><div class="mini">Development<span>Python · Kotlin · Web</span></div><div class="mini">Cloud &amp; DevOps<span>Docker · AWS · Jenkins</span></div></div></div></div></section>
 <section class="section wrap" id="experience"><div class="section-top reveal"><div><div class="section-label mono">02 / The journey</div><h2 class="title">Experience<br>in practice.</h2></div><span class="mono muted">Learning through<br>building &amp; doing ↘</span></div><div class="roles reveal"><article class="role"><div><h3>Operations Analytics</h3><span class="mono">CRED · Consultant</span></div><p>Investigate application and user issues with SQL, Databricks, logs and API testing. Support campaign configuration and troubleshooting.</p><span class="mono">Feb 2025 — Present<br>Bengaluru, India</span></article><article class="role"><div><h3>AI-DevOps Engineer</h3><span class="mono">Rooman Technologies · Intern</span></div><p>Worked with Docker, Kubernetes and Jenkins, with exposure to AWS and IBM Cloud.</p><span class="mono">Sep 2024 — Feb 2025</span></article><article class="role"><div><h3>Full Stack Trainee</h3><span class="mono">Indian Tech Keys</span></div><p>Developed responsive React components and contributed to a Node.js backend.</p><span class="mono">Sep 2022 — Oct 2022</span></article></div></section>
@@ -40,17 +61,17 @@
 <script>
 const revealItems=document.querySelectorAll('.reveal');if('IntersectionObserver' in window&&!matchMedia('(prefers-reduced-motion: reduce)').matches){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.08});revealItems.forEach(el=>observer.observe(el));}else revealItems.forEach(el=>el.classList.add('visible'));
 
-const portraitScene=document.querySelector('.portrait-wrap');
-const heroSection=document.querySelector('.hero');
-const motionAllowed=window.matchMedia('(prefers-reduced-motion: reduce)');
-if(portraitScene&&heroSection&&!motionAllowed.matches&&window.matchMedia('(hover: hover) and (pointer: fine)').matches){
-  heroSection.addEventListener('pointermove',event=>{
-    const box=heroSection.getBoundingClientRect();
-    portraitScene.style.setProperty('--portrait-x',((event.clientX-box.left)/box.width*2-1).toFixed(3));
-    portraitScene.style.setProperty('--portrait-y',((event.clientY-box.top)/box.height*2-1).toFixed(3));
-  },{passive:true});
-  heroSection.addEventListener('pointerleave',()=>{portraitScene.style.setProperty('--portrait-x','0');portraitScene.style.setProperty('--portrait-y','0');});
-}
 </script>
 
+<script type="module">
+const portraitStage = document.querySelector('.portrait-wrap');
+try {
+  const { mountPortrait } = await import('./assets/portrait-viewer.js');
+  await mountPortrait(portraitStage);
+} catch (error) {
+  portraitStage.dataset.state = 'fallback';
+  portraitStage.querySelector('[data-portrait-status]').textContent = '3D unavailable · showing photo';
+  console.warn('Portrait module unavailable:', error);
+}
+</script>
 </body></html>
