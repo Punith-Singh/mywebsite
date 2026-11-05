@@ -36,17 +36,7 @@
 
 </style></head><body>
 <header class="wrap nav" id="top"><a href="#top" class="wordmark" aria-label="Punith home">Punith<span>.</span></a><nav class="nav-links" aria-label="Main navigation"><a href="#about">About</a><a href="#experience">Experience</a><a href="#work">Projects</a><a href="#skills">Skills</a><a href="#contact">Contact</a></nav><a class="nav-cta" href="index.html">Current portfolio ↗</a></header>
-<main><section class="hero wrap" aria-label="Introduction"><div class="hero-copy"><div class="mono eyebrow">Hello, I’m Punith H Singh</div><h1>Curious<br><span>by design.</span></h1><p class="hero-sub">Working in operations analytics. Building practical software. Always learning.</p></div><div class="portrait-wrap" data-state="loading" aria-label="Interactive portrait">
-<span class="portrait-fallback" aria-hidden="true">P.</span><img class="portrait" src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" referrerpolicy="no-referrer" alt="Punith H Singh" onerror="this.hidden=true">
-<div class="portrait-viewport" data-portrait-viewport></div>
-<div class="portrait-ui"><p class="portrait-status mono" data-portrait-status role="status">Loading 3D portrait…</p>
-<div class="portrait-controls" data-portrait-controls hidden>
-<button type="button" data-rotate-left aria-label="Rotate portrait left">←</button>
-<button type="button" data-reset-portrait>↺ Reset view</button>
-<button type="button" data-rotate-right aria-label="Rotate portrait right">→</button>
-</div></div><span class="portrait-live" data-portrait-live role="status" aria-live="polite"></span>
-<noscript><style>.portrait-ui{display:none}</style></noscript>
-</div><div class="hero-right"><div class="mono">Developer / Problem solver<br>Bengaluru, India</div><p>From investigating real-world issues to building experiences that make everyday life a little better.</p><div class="hero-actions"><a class="pill light" href="#work">Explore work ↗</a><a class="pill" href="#contact">Get in touch</a></div></div><div class="hero-footer mono"><a href="#about">↓ &nbsp; Scroll to explore</a><span>Operations · Software · Cloud</span></div></section>
+<main><section class="hero wrap" aria-label="Introduction"><div class="hero-copy"><div class="mono eyebrow">Hello, I’m Punith H Singh</div><h1>Curious<br><span>by design.</span></h1><p class="hero-sub">Working in operations analytics. Building practical software. Always learning.</p></div><div class="portrait-wrap" aria-label="Portrait of Punith H Singh"><span class="portrait-fallback" aria-hidden="true">P.</span><img class="portrait" src="assets/punith-portrait.png" alt="Punith H Singh"></div><div class="hero-right"><div class="mono">Developer / Problem solver<br>Bengaluru, India</div><p>From investigating real-world issues to building experiences that make everyday life a little better.</p><div class="hero-actions"><a class="pill light" href="#work">Explore work ↗</a><a class="pill" href="#contact">Get in touch</a></div></div><div class="hero-footer mono"><a href="#about">↓ &nbsp; Scroll to explore</a><span>Operations · Software · Cloud</span></div></section>
 <div class="ticker mono" aria-hidden="true"><span>PYTHON <b>✳</b> SQL <b>✳</b> API DEBUGGING <b>✳</b> KOTLIN <b>✳</b> CLOUD <b>✳</b> BUILDING IN PUBLIC <b>✳</b> PYTHON <b>✳</b> SQL <b>✳</b> API DEBUGGING <b>✳</b> KOTLIN <b>✳</b> CLOUD <b>✳</b> BUILDING IN PUBLIC <b>✳</b></span></div>
 <section class="section wrap" id="about"><div class="about"><div class="about-scene reveal"><div class="id-card"><div class="id-image"><img src="https://lh3.googleusercontent.com/d/1cUtglVrjPCMVghO2Xrw2jd5myE7wwPje" referrerpolicy="no-referrer" alt="Portrait of Punith H Singh" loading="lazy" onerror="this.hidden=true"></div><div class="id-bottom"><div><div class="mono status">● Open to opportunities</div><strong>Punith H Singh</strong></div><span class="mono">BLR / IN</span></div></div></div><div class="about-copy reveal"><div class="section-label mono">01 / About me</div><h2 class="title">Hello, I’m<br>Punith Singh.</h2><p>I work in operations analytics at CRED, where I use SQL, logs and API testing to investigate issues and support campaigns. Outside work, I enjoy building applications and exploring software development, cloud and DevOps.</p><div class="mini-grid"><div class="mini">Technical ops<span>SQL · APIs · Logs</span></div><div class="mini">Development<span>Python · Kotlin · Web</span></div><div class="mini">Cloud &amp; DevOps<span>Docker · AWS · Jenkins</span></div></div></div></div></section>
 <section class="section wrap" id="experience"><div class="section-top reveal"><div><div class="section-label mono">02 / The journey</div><h2 class="title">Experience<br>in practice.</h2></div><span class="mono muted">Learning through<br>building &amp; doing ↘</span></div><div class="roles reveal"><article class="role"><div><h3>Operations Analytics</h3><span class="mono">CRED · Consultant</span></div><p>Investigate application and user issues with SQL, Databricks, logs and API testing. Support campaign configuration and troubleshooting.</p><span class="mono">Feb 2025 — Present<br>Bengaluru, India</span></article><article class="role"><div><h3>AI-DevOps Engineer</h3><span class="mono">Rooman Technologies · Intern</span></div><p>Worked with Docker, Kubernetes and Jenkins, with exposure to AWS and IBM Cloud.</p><span class="mono">Sep 2024 — Feb 2025</span></article><article class="role"><div><h3>Full Stack Trainee</h3><span class="mono">Indian Tech Keys</span></div><p>Developed responsive React components and contributed to a Node.js backend.</p><span class="mono">Sep 2022 — Oct 2022</span></article></div></section>
@@ -63,15 +53,5 @@ const revealItems=document.querySelectorAll('.reveal');if('IntersectionObserver'
 
 </script>
 
-<script type="module">
-const portraitStage = document.querySelector('.portrait-wrap');
-try {
-  const { mountPortrait } = await import('./assets/portrait-viewer.js');
-  await mountPortrait(portraitStage);
-} catch (error) {
-  portraitStage.dataset.state = 'fallback';
-  portraitStage.querySelector('[data-portrait-status]').textContent = '3D unavailable · showing photo';
-  console.warn('Portrait module unavailable:', error);
-}
-</script>
+
 </body></html>
