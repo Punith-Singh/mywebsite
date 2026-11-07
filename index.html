@@ -87,6 +87,7 @@
         .ambient-glow {
             position: fixed;
             border-radius: 50%;
+            filter: blur(140px);
             opacity: 0.16;
             pointer-events: none;
             z-index: -1;
@@ -94,10 +95,11 @@
         }
         html.light .ambient-glow {
             opacity: 0.22;
+            filter: blur(130px);
         }
-        .glow-blue { top: -15%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(ellipse, #3b82f6, transparent 70%); }
+        .glow-blue { top: -15%; left: -10%; width: 50vw; height: 50vw; background: #3b82f6; }
         .glow-indigo { bottom: -15%; right: -10%; width: 55vw; height: 55vw; background: #6366f1; }
-        .glow-violet { top: 35%; left: 30%; width: 35vw; height: 35vw; background: radial-gradient(ellipse, #8b5cf6, transparent 70%); opacity: 0.09; }
+        .glow-violet { top: 35%; left: 30%; width: 35vw; height: 35vw; background: #8b5cf6; opacity: 0.09; }
 
         /* Spotlight Card */
         .spotlight-card {
@@ -421,7 +423,7 @@
             html { scroll-behavior: auto !important; }
             .reveal { opacity: 1; transform: none; }
             .reveal, .spotlight-card, .spotlight-card::before { transition: none; }
-            .animate-fade-in-up, .animate-marquee, .animate-ping, .animate-pulse {
+            .animate-fade-in-up, .animate-marquee, .animate-ping, .animate-pulse, .animate-blob {
                 animation: none !important;
             }
         }
@@ -437,9 +439,9 @@
 
     <!-- Background Elements -->
     <div class="fixed inset-0 z-[-2] bg-grid"></div>
-    <div class="ambient-glow glow-blue"></div>
-    <div class="ambient-glow glow-indigo"></div>
-    <div class="ambient-glow glow-violet"></div>
+    <div class="ambient-glow glow-blue animate-blob"></div>
+    <div class="ambient-glow glow-indigo animate-blob" style="animation-delay: -5s;"></div>
+    <div class="ambient-glow glow-violet animate-blob" style="animation-delay: -9s;"></div>
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-[90] flex flex-col gap-2 pointer-events-none"></div>
