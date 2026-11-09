@@ -1998,6 +1998,10 @@
                 if (section.top > scrollTop + 180) break;
                 nextLink = section.link || null;
             }
+            // The final section may never reach the navigation threshold on short pages.
+            if (maxScroll > 0 && scrollTop >= maxScroll - 2) {
+                nextLink = navLinks.get('#contact') || nextLink;
+            }
             if (nextLink !== activeLink) {
                 activeLink?.classList.remove('active');
                 nextLink?.classList.add('active');
