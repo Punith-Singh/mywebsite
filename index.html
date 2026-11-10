@@ -597,19 +597,13 @@
                     </div>
 
                     <!-- Quick Metric Highlights -->
-                    <div class="grid grid-cols-3 gap-3 sm:gap-6 pt-6 border-t border-zinc-800/70 w-full max-w-lg">
-                        <div class="p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/70">
-                            <div class="text-base sm:text-xl font-bold text-zinc-100 font-mono flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-indigo-400 shrink-0"></span>SQL + APIs
-                            </div>
-                            <div class="text-[10px] sm:text-[11px] text-zinc-500 mt-0.5">Hands-on skills</div>
-                        </div>
-                        <div class="p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/70">
+                    <div class="grid gap-3 sm:gap-6 pt-6 border-t border-zinc-800/70 w-full max-w-lg" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+                        <div class="rounded-xl bg-zinc-900/50 border border-zinc-800/70" style="padding: 1rem;">
                             <div class="text-base sm:text-xl font-bold text-zinc-100 font-mono">1+ Yr</div>
                             <div class="text-[10px] sm:text-[11px] text-zinc-500 mt-0.5">Experience</div>
                         </div>
-                        <div class="p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/70">
-                            <div class="text-base sm:text-xl font-bold text-zinc-100 font-mono">4+</div>
+                        <div class="rounded-xl bg-zinc-900/50 border border-zinc-800/70" style="padding: 1rem;">
+                            <div id="hero-project-count" class="text-base sm:text-xl font-bold text-zinc-100 font-mono">13</div>
                             <div class="text-[10px] sm:text-[11px] text-zinc-500 mt-0.5">Projects</div>
                         </div>
                     </div>
@@ -1678,6 +1672,8 @@
 
         function updateProjectCounts() {
             const cards = [...document.querySelectorAll('.project-card')];
+            const heroProjectCount = document.getElementById('hero-project-count');
+            if (heroProjectCount) heroProjectCount.textContent = String(cards.length);
             document.querySelectorAll('.proj-filter-btn[data-filter]').forEach(button => {
                 const category = button.getAttribute('data-filter');
                 const count = category === 'all' ? cards.length : cards.filter(card =>
